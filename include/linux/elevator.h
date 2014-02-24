@@ -218,10 +218,7 @@ enum {
 #define rq_fifo_time(rq)	((unsigned long) (rq)->csd.list.next)
 #define rq_set_fifo_time(rq,exp)	((rq)->csd.list.next = (void *) (exp))
 #define rq_entry_fifo(ptr)	list_entry((ptr), struct request, queuelist)
-#define rq_fifo_clear(rq)	do {		\
-	list_del_init(&(rq)->queuelist);	\
-	INIT_LIST_HEAD(&(rq)->csd.list);	\
-	} while (0)
+#define rq_fifo_clear(rq)	list_del_init(&(rq)->queuelist)
 
 #else /* CONFIG_BLOCK */
 
