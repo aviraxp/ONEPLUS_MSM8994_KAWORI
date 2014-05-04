@@ -14,6 +14,7 @@
 #include <linux/init.h>
 #include <linux/console.h>
 #include <linux/cpu.h>
+#include <linux/cpuidle.h>
 #include <linux/syscalls.h>
 #include <linux/gfp.h>
 #include <linux/io.h>
@@ -66,7 +67,9 @@ static void freeze_begin(void)
 
 static void freeze_enter(void)
 {
+	cpuidle_use_deepest_state(true);
 	wait_event(suspend_freeze_wait_head, suspend_freeze_wake);
+	cpuidle_use_deepest_state(false);
 }
 
 void freeze_wake(void)
