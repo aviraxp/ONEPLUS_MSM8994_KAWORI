@@ -33,10 +33,11 @@
 
 #define STATUS_CHECK_INTERVAL_MS 5000
 #define STATUS_CHECK_INTERVAL_MIN_MS 50
-#define DSI_STATUS_CHECK_DISABLE 0
+#define DSI_STATUS_CHECK_INIT -1
+#define DSI_STATUS_CHECK_DISABLE 1
 
 static uint32_t interval = STATUS_CHECK_INTERVAL_MS / 2;
-static uint32_t dsi_status_disable = DSI_STATUS_CHECK_DISABLE;
+static uint32_t dsi_status_disable = DSI_STATUS_CHECK_INIT;
 static struct dsi_status_data *pstatus_data;
 static DEFINE_SPINLOCK(pstatus_init_lock);
 
@@ -188,13 +189,11 @@ static int fb_event_callback(struct notifier_block *self,
 
 	pinfo = &ctrl_pdata->panel_data.panel_info;
 
-	if (!(pinfo->esd_check_enabled)) {
-		pr_debug("ESD check is not enaled in panel dtsi\n");
-		return NOTIFY_DONE;
-	}
-
-	if (dsi_status_disable) {
-		pr_debug("%s: DSI status disabled\n", __func__);
+	if ((!(pinfo->esd_check_enabled) &&
+			dsi_status_disable) ||
+			(dsi_status_disable == DSI_STATUS_CHECK_DISABLE)) {
+		pr_debug("ESD check is disabled.\n");
+		cancel_delayed_work(&pdata->check_status);
 		return NOTIFY_DONE;
 	}
 
