@@ -447,8 +447,9 @@ static void configure_bark_dump(struct msm_watchdog_data *wdog_dd)
 	if (MSM_DUMP_MAJOR(msm_dump_table_version()) == 1) {
 		wdog_dd->scm_regsave = (void *)__get_free_page(GFP_KERNEL);
 		if (wdog_dd->scm_regsave) {
-			desc.args[0] = cmd_buf.addr =
-					virt_to_phys(wdog_dd->scm_regsave);
+			/* scm_regsave may be a phys address > 4GB */
+			desc.args[0] = virt_to_phys(wdog_dd->scm_regsave);
+			cmd_buf.addr = virt_to_phys(wdog_dd->scm_regsave);
 			desc.args[1] = cmd_buf.len  = PAGE_SIZE;
 			desc.arginfo = SCM_ARGS(2, SCM_RW, SCM_VAL);
 
