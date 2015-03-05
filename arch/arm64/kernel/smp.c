@@ -742,7 +742,7 @@ void smp_send_stop(void)
 		cpumask_t mask;
 
 		cpumask_copy(&mask, cpu_online_mask);
-		cpu_clear(smp_processor_id(), mask);
+		cpumask_clear_cpu(smp_processor_id(), &mask);
 
 		smp_cross_call_common(&mask, IPI_CPU_STOP);
 	}
