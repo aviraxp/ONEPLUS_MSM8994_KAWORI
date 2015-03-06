@@ -51,6 +51,7 @@
 #include <linux/msm_iommu_domains.h>
 
 #include "mdss_fb.h"
+#include "mdss_mdp.h"
 #include "mdss_mdp_splash_logo.h"
 #define CREATE_TRACE_POINTS
 #include "mdss_debug.h"
@@ -764,6 +765,37 @@ static ssize_t mdss_fb_get_dfps_mode(struct device *dev,
 	return ret;
 }
 
+static ssize_t mdss_fb_set_idle_pc(struct device *dev,
+	struct device_attribute *attr, const char *buf, size_t count)
+{
+	struct fb_info *fbi = dev_get_drvdata(dev);
+	struct msm_fb_data_type *mfd = fbi->par;
+	struct mdss_data_type *mdata = mfd_to_mdata(mfd);
+	int rc, idle_pc;
+
+	rc = kstrtoint(buf, 10, &idle_pc);
+	if (rc) {
+		pr_err("kstrtoint failed. rc=%d\n", rc);
+		return rc;
+	}
+
+	mdata->idle_pc_enabled = idle_pc ? true : false;
+	pr_info("idle power collapse %s\n",
+		mdata->idle_pc_enabled ? "enabled" : "disabled");
+
+	return count;
+}
+
+static ssize_t mdss_fb_get_idle_pc(struct device *dev,
+		struct device_attribute *attr, char *buf)
+{
+	struct fb_info *fbi = dev_get_drvdata(dev);
+	struct msm_fb_data_type *mfd = fbi->par;
+	struct mdss_data_type *mdata = mfd_to_mdata(mfd);
+
+	return scnprintf(buf, PAGE_SIZE, "%d\n", mdata->idle_pc_enabled);
+}
+
 #ifdef VENDOR_EDIT/* guozhiming@oem  Add for set cabc function 2015-04-01 */ 
 
 extern int set_cabc(int level);
@@ -805,6 +837,8 @@ static DEVICE_ATTR(msm_fb_panel_status, S_IRUGO | S_IWUSR,
 	mdss_fb_get_panel_status, mdss_fb_force_panel_dead);
 static DEVICE_ATTR(msm_fb_dfps_mode, S_IRUGO | S_IWUSR,
 	mdss_fb_get_dfps_mode, mdss_fb_change_dfps_mode);
+static DEVICE_ATTR(idle_pc, S_IRUGO | S_IWUSR | S_IWGRP, mdss_fb_get_idle_pc,
+	mdss_fb_set_idle_pc);
 #ifdef VENDOR_EDIT
 /* guozhiming@oem  Add for set cabc function 2015-04-01 */ 
 static DEVICE_ATTR(cabc, S_IRUGO|S_IWUSR, mdss_get_cabc, mdss_set_cabc);
@@ -821,6 +855,7 @@ static struct attribute *mdss_fb_attrs[] = {
 	&dev_attr_msm_fb_thermal_level.attr,
 	&dev_attr_msm_fb_panel_status.attr,
 	&dev_attr_msm_fb_dfps_mode.attr,
+	&dev_attr_idle_pc.attr,
 	#ifdef VENDOR_EDIT
     /* guozhiming@oem  Add for set cabc function 2015-04-01*/
 	&dev_attr_cabc.attr,
