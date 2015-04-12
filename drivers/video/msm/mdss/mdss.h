@@ -181,6 +181,7 @@ struct mdss_data_type {
 	bool has_pingpong_split;
 	bool has_pixel_ram;
 	bool needs_hist_vote;
+	bool enable_idle_pc;
 
 	u32 default_ot_rd_limit;
 	u32 default_ot_wr_limit;

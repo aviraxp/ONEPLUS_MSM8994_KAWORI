@@ -779,9 +779,10 @@ static ssize_t mdss_fb_set_idle_pc(struct device *dev,
 		return rc;
 	}
 
-	mdata->idle_pc_enabled = idle_pc ? true : false;
-	pr_info("idle power collapse %s\n",
-		mdata->idle_pc_enabled ? "enabled" : "disabled");
+	mdata->enable_idle_pc = idle_pc ? true : false;
+	pr_info("idle power collapse %s -> %s\n",
+		mdata->idle_pc_enabled ? "enabled" : "disabled",
+		mdata->enable_idle_pc ? "enabled" : "disabled");
 
 	return count;
 }
@@ -793,7 +794,11 @@ static ssize_t mdss_fb_get_idle_pc(struct device *dev,
 	struct msm_fb_data_type *mfd = fbi->par;
 	struct mdss_data_type *mdata = mfd_to_mdata(mfd);
 
-	return scnprintf(buf, PAGE_SIZE, "%d\n", mdata->idle_pc_enabled);
+	pr_info("idle power collapse %s -> %s\n",
+		mdata->idle_pc_enabled ? "enabled" : "disabled",
+		mdata->enable_idle_pc ? "enabled" : "disabled");
+
+	return scnprintf(buf, PAGE_SIZE, "%d\n", mdata->enable_idle_pc);
 }
 
 #ifdef VENDOR_EDIT/* guozhiming@oem  Add for set cabc function 2015-04-01 */ 
