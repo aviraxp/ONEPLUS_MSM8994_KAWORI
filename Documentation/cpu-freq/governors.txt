@@ -302,6 +302,9 @@ boostpulse_duration: Length of time to hold CPU speed at hispeed_freq
 on a write to boostpulse, before allowing speed to drop according to
 load as usual.  Default is 80000 uS.
 
+use_migration_notif: If non-zero, schedule hrtimer to fire in 1ms
+to reevaluate frequency of notified CPU, unless the hrtimer is already
+pending. If zero, ignore scheduler notification. Default is zero.
 
 3. The Governor Interface in the CPUfreq Core
 =============================================
