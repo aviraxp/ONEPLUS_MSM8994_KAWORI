@@ -1449,7 +1449,7 @@ int kgsl_pwrctrl_init(struct kgsl_device *device)
 	/* Initialize the user and thermal clock constraints */
 
 	pwr->max_pwrlevel = 0;
-	pwr->min_pwrlevel = pdata->num_levels - 2;
+	pwr->min_pwrlevel = pdata->num_levels - 3;
 	pwr->thermal_pwrlevel = 0;
 
 	pwr->active_pwrlevel = pdata->init_level;
