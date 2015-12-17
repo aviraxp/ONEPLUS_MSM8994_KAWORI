@@ -342,7 +342,7 @@ static int set_cpu_min_freq(const char *buf, const struct kernel_param *kp)
 
 		i_cpu_stats = &per_cpu(cpu_stats, cpu);
 
-		i_cpu_stats->min = val;
+		// i_cpu_stats->min = val;
 		cpumask_set_cpu(cpu, limit_mask);
 
 		cp = strchr(cp, ' ');
@@ -425,7 +425,7 @@ static int set_cpu_max_freq(const char *buf, const struct kernel_param *kp)
 
 		i_cpu_stats = &per_cpu(cpu_stats, cpu);
 
-		i_cpu_stats->max = val;
+		// i_cpu_stats->max = val;
 		cpumask_set_cpu(cpu, limit_mask);
 
 		cp = strchr(cp, ' ');
