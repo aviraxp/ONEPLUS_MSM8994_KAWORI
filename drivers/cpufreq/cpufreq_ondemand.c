@@ -29,6 +29,8 @@
 
 static DEFINE_PER_CPU(struct od_cpu_dbs_info_s, od_cpu_dbs_info);
 
+static DEFINE_PER_CPU(struct od_dbs_tuners *, cached_tuners);
+
 static struct od_ops od_ops;
 
 #ifndef CONFIG_CPU_FREQ_DEFAULT_GOV_ONDEMAND
@@ -474,16 +476,64 @@ static struct attribute_group od_attr_group_gov_pol = {
 
 /************************** sysfs end ************************/
 
-static int od_init(struct dbs_data *dbs_data)
+static void save_tuners(struct cpufreq_policy *policy,
+		struct od_dbs_tuners *tuners)
+{
+	int cpu;
+
+	if (have_governor_per_policy())
+	    cpu = cpumask_first(policy->related_cpus);
+	else
+	    cpu = 0;
+
+	WARN_ON(per_cpu(cached_tuners, cpu) &&
+	per_cpu(cached_tuners, cpu) != tuners);
+	per_cpu(cached_tuners, cpu) = tuners;
+}
+
+static struct od_dbs_tuners *alloc_tuners(struct cpufreq_policy *policy)
+{
+	struct od_dbs_tuners *tuners;
+
+	tuners = kzalloc(sizeof(*tuners), GFP_KERNEL);
+	if (!tuners) {
+	    pr_err("%s: kzalloc failed\n", __func__);
+	    return ERR_PTR(-ENOMEM);
+	}
+
+	tuners->sampling_down_factor = DEF_SAMPLING_DOWN_FACTOR;
+	tuners->ignore_nice_load = 0;
+	tuners->powersave_bias = default_powersave_bias;
+	tuners->io_is_busy = should_io_be_busy();
+
+	save_tuners(policy, tuners);
+
+	return tuners;
+}
+
+static struct od_dbs_tuners *restore_tuners(struct cpufreq_policy *policy)
+{
+	int cpu;
+
+	if (have_governor_per_policy())
+	    cpu = cpumask_first(policy->related_cpus);
+	else
+	    cpu = 0;
+
+	return per_cpu(cached_tuners, cpu);
+}
+
+static int od_init(struct dbs_data *dbs_data, struct cpufreq_policy *policy)
 {
 	struct od_dbs_tuners *tuners;
 	u64 idle_time;
 	int cpu;
 
-	tuners = kzalloc(sizeof(*tuners), GFP_KERNEL);
+	tuners = restore_tuners(policy);
 	if (!tuners) {
-		pr_err("%s: kzalloc failed\n", __func__);
-		return -ENOMEM;
+		tuners = alloc_tuners(policy);
+		if (IS_ERR(tuners))
+			return PTR_ERR(tuners);
 	}
 
 	cpu = get_cpu();
@@ -506,11 +556,6 @@ static int od_init(struct dbs_data *dbs_data)
 			jiffies_to_usecs(10);
 	}
 
-	tuners->sampling_down_factor = DEF_SAMPLING_DOWN_FACTOR;
-	tuners->ignore_nice_load = 0;
-	tuners->powersave_bias = default_powersave_bias;
-	tuners->io_is_busy = should_io_be_busy();
-
 	dbs_data->tuners = tuners;
 	mutex_init(&dbs_data->mutex);
 	return 0;
@@ -518,7 +563,7 @@ static int od_init(struct dbs_data *dbs_data)
 
 static void od_exit(struct dbs_data *dbs_data)
 {
-	kfree(dbs_data->tuners);
+//	nothing to do
 }
 
 define_get_cpu_dbs_routines(od_cpu_dbs_info);
@@ -538,7 +583,7 @@ static struct common_dbs_data od_dbs_cdata = {
 	.gov_dbs_timer = od_dbs_timer,
 	.gov_check_cpu = od_check_cpu,
 	.gov_ops = &od_ops,
-	.init = od_init,
+	.init_od = od_init,
 	.exit = od_exit,
 };
 
@@ -613,7 +658,14 @@ static int __init cpufreq_gov_dbs_init(void)
 
 static void __exit cpufreq_gov_dbs_exit(void)
 {
+	int cpu;
+
 	cpufreq_unregister_governor(&cpufreq_gov_ondemand);
+
+	for_each_possible_cpu(cpu) {
+		kfree(per_cpu(cached_tuners, cpu));
+		per_cpu(cached_tuners, cpu) = NULL;
+	}
 }
 
 MODULE_AUTHOR("Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>");
