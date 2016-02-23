@@ -916,7 +916,7 @@ static int update_request_adhoc(uint32_t cl, unsigned int index)
 	rt_mutex_lock(&msm_bus_adhoc_lock);
 
 	if (!cl) {
-		MSM_BUS_ERR("%s: Invalid client handle %d", __func__, cl);
+		//MSM_BUS_ERR("%s: Invalid client handle %d", __func__, cl);
 		ret = -ENXIO;
 		goto exit_update_request;
 	}
@@ -924,22 +924,22 @@ static int update_request_adhoc(uint32_t cl, unsigned int index)
 	client = handle_list.cl_list[cl];
 	pdata = client->pdata;
 	if (!pdata) {
-		MSM_BUS_ERR("%s: Client data Null.[client didn't register]",
-				__func__);
+		//MSM_BUS_ERR("%s: Client data Null.[client didn't register]",
+		//		__func__);
 		ret = -ENXIO;
 		goto exit_update_request;
 	}
 
 	if (index >= pdata->num_usecases) {
-		MSM_BUS_ERR("Client %u passed invalid index: %d\n",
-			cl, index);
+		//MSM_BUS_ERR("Client %u passed invalid index: %d\n",
+		//	cl, index);
 		ret = -ENXIO;
 		goto exit_update_request;
 	}
 
 	if (client->curr == index) {
-		MSM_BUS_DBG("%s: Not updating client request idx %d unchanged",
-				__func__, index);
+		//MSM_BUS_DBG("%s: Not updating client request idx %d unchanged",
+		//		__func__, index);
 		goto exit_update_request;
 	}
 
@@ -949,8 +949,8 @@ static int update_request_adhoc(uint32_t cl, unsigned int index)
 	if (!strcmp(test_cl, pdata->name))
 		log_transaction = true;
 
-	MSM_BUS_DBG("%s: cl: %u index: %d curr: %d num_paths: %d\n", __func__,
-		cl, index, client->curr, client->pdata->usecase->num_paths);
+	//MSM_BUS_DBG("%s: cl: %u index: %d curr: %d num_paths: %d\n", __func__,
+	//	cl, index, client->curr, client->pdata->usecase->num_paths);
 
 	msm_bus_dbg_client_data(client->pdata, index , cl);
 	for (i = 0; i < pdata->usecase->num_paths; i++) {
@@ -966,16 +966,16 @@ static int update_request_adhoc(uint32_t cl, unsigned int index)
 		} else {
 			curr_clk = client->pdata->usecase[curr].vectors[i].ib;
 			curr_bw = client->pdata->usecase[curr].vectors[i].ab;
-			MSM_BUS_DBG("%s:ab: %llu ib: %llu\n", __func__,
-					curr_bw, curr_clk);
+			//MSM_BUS_DBG("%s:ab: %llu ib: %llu\n", __func__,
+			//		curr_bw, curr_clk);
 		}
 
 		ret = update_path(src, dest, req_clk, req_bw,
 				curr_clk, curr_bw, lnode, pdata->active_only);
 
 		if (ret) {
-			MSM_BUS_ERR("%s: Update path failed! %d ctx %d\n",
-					__func__, ret, ACTIVE_CTX);
+			//MSM_BUS_ERR("%s: Update path failed! %d ctx %d\n",
+			//		__func__, ret, ACTIVE_CTX);
 			goto exit_update_request;
 		}
 
