@@ -328,10 +328,12 @@ u32 convert_pwm_us (u32 pwm_us)
 
 int check_for_notification_led(struct led_classdev *led_cdev)
 {
-	if (strcmp(led_cdev->name, "button-backlight") == 0)
-		return 0;
+	if ((strcmp(led_cdev->name, "red") == 0) ||
+		(strcmp(led_cdev->name, "green") == 0) ||
+		(strcmp(led_cdev->name, "blue") == 0))
+		return 1;
 
-	return 1;
+	return 0;
 }
 
 int convert_brightness (int brightness)
