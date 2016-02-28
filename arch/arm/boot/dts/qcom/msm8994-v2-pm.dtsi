@@ -529,6 +529,7 @@
 			<0xff 140>,  /* msm_serial_hsl0 */
 			<0xff 155>,  /* sdcc_irq[0] */
 			<0xff 157>,  /* sdcc_irq[1] */
+			<0xff 159>,  /* mmc2 */
 			<0xff 163>,  /* usb30_ee1_irq */
 			<0xff 164>,  /* sps */
 			<0xff 170>,  /* sdcc_pwr_cmd_irq */
@@ -566,6 +567,7 @@
 			<0xff 224>,  /* spdm_bw_hyp */
 			<0xff 240>, /* summary_irq_kpss */
 			<0xff 253>, /* f98a4900.sdhci */
+			<0xff 256>, /* sdhc_3 */
 			<0xff 261>,  /* msm_iommu_global_cfg */
 			<0xff 263>,  /* msm_iommu_global_client */
 			<0xff 268>, /* bam_irq[1] */
@@ -575,6 +577,7 @@
 			<0xff 273>,  /* msm_iommu_nonsecure_irq */
 			<0xff 275>,  /* int_msi */
 			<0xff 276>, /* wlan_pci */
+			<0xff 280>,  /* mobicore */
 			<0xff 283>,  /* int_pls_err */
 			<0xff 284>,  /* int_aer_legacy */
 			<0xff 286>,  /* int_pls_link_down */
