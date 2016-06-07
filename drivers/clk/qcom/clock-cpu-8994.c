@@ -1645,6 +1645,8 @@ static void init_v2_data(void)
 
 static int a57speedbin;
 static int a53speedbin;
+module_param(a57speedbin, int, 0444);
+module_param(a53speedbin, int, 0444);
 struct platform_device *cpu_clock_8994_dev;
 
 /* Low power mux code begins here */
