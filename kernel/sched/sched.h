@@ -353,7 +353,7 @@ struct cfs_rq {
 
 	u64 throttled_clock, throttled_clock_task;
 	u64 throttled_clock_task_time;
-	int throttled, throttle_count;
+	int throttled, throttle_count, throttle_uptodate;
 #ifdef VENDOR_EDIT
 	struct list_head throttled_list, unthrottled_list;
 	atomic_t throttling_in_progress;
