@@ -103,7 +103,7 @@ unsigned int __read_mostly sysctl_thermal_aware_scheduling = SCHED_TA_THERMAL_ON
  * per-task flag PF_WAKE_UP_IDLE can still cause a task to go to an
  * idle CPU upon being woken.
  */
-unsigned int __read_mostly sysctl_sched_wake_to_idle;
+unsigned int __read_mostly sysctl_sched_wake_to_idle = 1;
 
 /*
  * SCHED_OTHER wake-up granularity.
