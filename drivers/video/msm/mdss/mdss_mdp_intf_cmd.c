@@ -460,6 +460,7 @@ static void mdss_mdp_cmd_pingpong_done(void *arg)
 	struct mdss_mdp_vsync_handler *tmp;
 	ktime_t vsync_time;
 	bool sync_ppdone;
+	u32 status;
 
 	if (!ctx) {
 		pr_err("%s: invalid ctx\n", __func__);
@@ -494,7 +495,9 @@ static void mdss_mdp_cmd_pingpong_done(void *arg)
 			       atomic_read(&ctx->koff_cnt));
 		if (sync_ppdone) {
 			atomic_inc(&ctx->pp_done_cnt);
-			schedule_work(&ctx->pp_done_work);
+			status = mdss_mdp_ctl_perf_get_transaction_status(ctl);
+			if (status == 0 && !ctl->commit_in_progress)
+				schedule_work(&ctx->pp_done_work);
 		}
 		wake_up_all(&ctx->pp_waitq);
 	} else if (!ctl->cmd_autorefresh_en) {

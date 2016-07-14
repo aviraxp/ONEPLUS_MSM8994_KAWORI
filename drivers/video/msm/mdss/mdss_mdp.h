@@ -307,6 +307,7 @@ struct mdss_mdp_ctl {
 	u32 wb_type;
 	u32 prg_fet;
 	int pending_mode_switch;
+	bool commit_in_progress;
 };
 
 struct mdss_mdp_mixer {
