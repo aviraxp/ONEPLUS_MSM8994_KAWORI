@@ -446,6 +446,8 @@ struct synaptics_ts_data {
 	char test_limit_name[TP_FW_NAME_MAX_LEN];
 	char fw_id[12];
 	char manu_name[12];
+
+	struct work_struct pm_work;
 };
 
 static struct device_attribute attrs_oem[] = {
@@ -2960,6 +2962,21 @@ static int synaptics_parse_dts(struct device *dev, struct synaptics_ts_data *ts)
 
 	return rc;
 }
+
+static void synaptics_suspend_resume(struct work_struct *work)
+{
+	struct synaptics_ts_data *ts =
+		container_of(work, typeof(*ts), pm_work);
+
+	if (ts->is_suspended) {
+		atomic_set(&ts->is_stop, 1);
+		synaptics_ts_suspend(&ts->client->dev);
+	} else {
+		atomic_set(&ts->is_stop, 0);
+		synaptics_ts_resume(&ts->client->dev);
+	}
+}
+
 #ifdef SUPPORT_VIRTUAL_KEY
 #define VK_KEY_X    180
 #define VK_CENTER_Y 2018//2260
@@ -3138,6 +3155,9 @@ static int synaptics_ts_probe(struct i2c_client *client, const struct i2c_device
 	if(ret < 0) {
 		TPD_ERR("synaptics_input_init failed!\n");
 	}
+
+	INIT_WORK(&ts->pm_work, synaptics_suspend_resume);
+
 #if defined(CONFIG_FB)
 	ts->fb_notif.notifier_call = fb_notifier_callback;
 	ret = fb_register_client(&ts->fb_notif);
@@ -3433,46 +3453,40 @@ static int synaptics_mode_change(int mode)
 		TPD_ERR("%s: set dose mode err!!\n", __func__);
 	return ret;
 }
+
 #if defined(CONFIG_FB)
 static int fb_notifier_callback(struct notifier_block *self, unsigned long event, void *data)
 {
+	struct synaptics_ts_data *ts =
+		container_of(self, struct synaptics_ts_data, fb_notif);
 	struct fb_event *evdata = data;
-	int *blank;
-	//int ret;
+	int *blank = evdata->data;
 
-	struct synaptics_ts_data *ts = container_of(self, struct synaptics_ts_data, fb_notif);
-
-	if(FB_EARLY_EVENT_BLANK != event && FB_EVENT_BLANK != event)
-	return 0;
-	if((evdata) && (evdata->data) && (ts) && (ts->client)) {
-		blank = evdata->data;
-		if((*blank == FB_BLANK_UNBLANK || *blank == FB_BLANK_VSYNC_SUSPEND)\
-            && (event == FB_EARLY_EVENT_BLANK )) {
-            if (ts->is_suspended == 1)
-            {
-                TPD_DEBUG("%s going TP resume\n", __func__);
-				synaptics_ts_resume(&ts->client->dev);
-                ts->is_suspended = 0;
-                atomic_set(&ts->is_stop,0);
-            }
-		} else if( *blank == FB_BLANK_POWERDOWN && (event == FB_EVENT_BLANK )) {
-            if (ts->is_suspended == 0)
-            {
-                TPD_DEBUG("%s : going TP suspend\n", __func__);
-                synaptics_ts_suspend(&ts->client->dev);
-                ts->is_suspended = 1;
-            }
+	if (event = FB_EARLY_EVENT_BLANK) {
+		switch (*blank) {
+		case FB_BLANK_UNBLANK:
+		case FB_BLANK_VSYNC_SUSPEND:
+			if (ts->is_suspended) {
+				ts->is_suspended = 0;
+				queue_work(system_highpri_wq, &ts->pm_work);
+			}
+			break;
+		case FB_BLANK_POWERDOWN:
+			if (!ts->is_suspended) {
+				ts->is_suspended = 1;
+				queue_work(system_highpri_wq, &ts->pm_work);
+			}
+			break;
 		}
-        else if( *blank == FB_BLANK_UNBLANK && (event == FB_EVENT_BLANK )) {
-				//ret = synaptics_mode_change(0x04);
-				//TPD_DEBUG("%s %d F01_RMI_CTRL00:0x%x = 0x%x\n",__func__,__LINE__,
-				//	F01_RMI_CTRL00,i2c_smbus_read_byte_data(ts_g->client, F01_RMI_CTRL00));
-				queue_delayed_work(synaptics_wq,&ts->speed_up_work, msecs_to_jiffies(5));
-		}else if( *blank == FB_BLANK_POWERDOWN && (event == FB_EARLY_EVENT_BLANK )) {
-            atomic_set(&ts->is_stop,1);
+	} else if (event = FB_EVENT_BLANK) {
+		switch (*blank) {
+		case FB_BLANK_UNBLANK:
+			queue_delayed_work(synaptics_wq, &ts->speed_up_work, msecs_to_jiffies(5));
+			break;
 		}
 	}
-	return 0;
+
+	return NOTIFY_OK;
 }
 #endif
 
