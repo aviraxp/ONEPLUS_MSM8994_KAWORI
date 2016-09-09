@@ -1147,6 +1147,8 @@ int mdss_mdp_cmd_ctx_stop(struct mdss_mdp_ctl *ctl,
 		ctx->pp_num, NULL, NULL);
 
 	memset(ctx, 0, sizeof(*ctx));
+	/* intf stopped,  no more kickoff */
+	ctx->intf_stopped = 1;
 
 	return 0;
 }
