@@ -23,6 +23,7 @@
 #include <asm/cacheflush.h>
 #include <soc/qcom/scm.h>
 #include "governor.h"
+#include <linux/moduleparam.h>
 
 static DEFINE_SPINLOCK(tz_lock);
 
@@ -61,6 +62,10 @@ static DEFINE_SPINLOCK(tz_lock);
 #define TZ_V2_INIT_ID_64           0xB
 
 #define TAG "msm_adreno_tz: "
+
+// module parameter
+static int adrenoboost = 0;
+module_param(adrenoboost, int, 0644);
 
 struct msm_adreno_extended_profile *partner_gpu_profile;
 static void do_partner_start_event(struct work_struct *work);
@@ -195,7 +200,18 @@ static int tz_get_target_freq(struct devfreq *devfreq, unsigned long *freq,
 
 	*freq = stats.current_frequency;
 	priv->bin.total_time += stats.total_time;
-	priv->bin.busy_time += stats.busy_time;
+	// AP: priv->bin.busy_time += stats.busy_time;
+
+	// scale busy time up based on adrenoboost parameter, only if MIN_BUSY exceeded...
+	if ((unsigned int)(priv->bin.busy_time + stats.busy_time) >= MIN_BUSY) {
+		// sanitize adrenoboost module parameter
+		if ((adrenoboost < 0) || (adrenoboost > 3))
+			adrenoboost = 0;
+
+		priv->bin.busy_time += stats.busy_time * (1 + (adrenoboost*3)/2);
+	} else {
+		priv->bin.busy_time += stats.busy_time;
+	}
 
 	/*
 	 * Do not waste CPU cycles running this algorithm if
@@ -242,21 +258,27 @@ static int tz_get_target_freq(struct devfreq *devfreq, unsigned long *freq,
 					&val, sizeof(val), priv->is_64);
 	}
 
-	// AP: Tweak 27 MHz frequency to be used a bit more
-	if ((val == 0) && (level == 5) &&	// (5 = 180 MHz step)
-		((priv->bin.busy_time * 100 / priv->bin.total_time) < 98))
-		val = 1;
+	if (adrenoboost == 0)	// only if gpu boost is not enabled by user
+	{
+		// AP: Tweak 27 MHz frequency to be used a bit more
+		if ((val == 0) && (level == 5) &&	// (5 = 180 MHz step)
+			((priv->bin.busy_time * 100 / priv->bin.total_time) < 98))
+			val = 1;
+	}
 
 	priv->bin.total_time = 0;
 	priv->bin.busy_time = 0;
 
-	// AP: Tweak not to peak up when we come from 27 MHz and need to ramp up
-	if ((val < -1) && (level == 6))
-		val = -1;
+	if (adrenoboost == 0)	// only if gpu boost is not enabled by user
+	{
+		// AP: Tweak not to peak up when we come from 27 MHz and need to ramp up
+		if ((val < -1) && (level == 6))
+			val = -1;
 
-	// AP: In general we do not ramp up more than 2 steps at once
-	if (val < -2)
-		val = -2;
+		// AP: In general we do not ramp up more than 2 steps at once
+		if (val < -2)
+			val = -2;
+	}
 
 	/*
 	 * If the decision is to move to a different level, make sure the GPU
