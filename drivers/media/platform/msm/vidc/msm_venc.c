@@ -11,6 +11,7 @@
  *
  */
 #include <linux/slab.h>
+#include <linux/qpnp/qpnp-haptic.h>
 #include "msm_vidc_internal.h"
 #include "msm_vidc_common.h"
 #include "vidc_hfi_api.h"
@@ -1478,6 +1479,9 @@ static int msm_venc_start_streaming(struct vb2_queue *q, unsigned int count)
 		rc = -EINVAL;
 		break;
 	}
+
+	qpnp_disable_haptics(true);
+
 	return rc;
 }
 
@@ -1509,6 +1513,9 @@ static int msm_venc_stop_streaming(struct vb2_queue *q)
 		dprintk(VIDC_ERR,
 			"Failed to move inst: %pK, cap = %d to state: %d\n",
 			inst, q->type, MSM_VIDC_CLOSE_DONE);
+
+	qpnp_disable_haptics(false);
+
 	return rc;
 }
 
