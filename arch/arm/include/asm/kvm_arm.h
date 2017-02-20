@@ -207,6 +207,7 @@
 #define HSR_EC_IABT_HYP	(0x21)
 #define HSR_EC_DABT	(0x24)
 #define HSR_EC_DABT_HYP	(0x25)
+#define HSR_EC_MAX	(0x3f)
 
 #define HSR_HVC_IMM_MASK	((1UL << 16) - 1)
 
