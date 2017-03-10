@@ -18,8 +18,6 @@
 #include <linux/const.h>
 #include <asm/assembler.h>
 #include <asm/page.h>
-#include <asm/cpufeature.h>
-#include <asm/alternative.h>
 
 /*
  * Copy a page from src to dest (both are page aligned)
@@ -29,14 +27,9 @@
  *	x1 - src
  */
 ENTRY(copy_page)
-alternative_if_not ARM64_HAS_NO_HW_PREFETCH
-	nop
-	nop
-alternative_else
 	# Prefetch two cache lines ahead.
 	prfm    pldl1strm, [x1, #128]
 	prfm    pldl1strm, [x1, #256]
-alternative_endif
 
 	ldp	x2, x3, [x1]
 	ldp	x4, x5, [x1, #16]
@@ -52,11 +45,7 @@ alternative_endif
 1:
 	subs	x18, x18, #128
 
-alternative_if_not ARM64_HAS_NO_HW_PREFETCH
-	nop
-alternative_else
 	prfm    pldl1strm, [x1, #384]
-alternative_endif
 
 	stnp	x2, x3, [x0]
 	ldp	x2, x3, [x1]
