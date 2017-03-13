@@ -406,10 +406,18 @@ void rcu_read_unlock_special(struct task_struct *t)
 		}
 
 #ifdef CONFIG_RCU_BOOST
-		/* Unboost if we were boosted. */
+		/*
+		 * Unboost if we were boosted.
+		 * Disable preemption to make sure completion is signalled
+		 * without having the task de-scheduled with its priority
+		 * lowered (in which case we're left with no boosted thread
+		 * and possible RCU starvation).
+		 */
 		if (rbmp) {
+			preempt_disable();
 			rt_mutex_unlock(rbmp);
 			complete(&rnp->boost_completion);
+			preempt_enable();
 		}
 #endif /* #ifdef CONFIG_RCU_BOOST */
 
