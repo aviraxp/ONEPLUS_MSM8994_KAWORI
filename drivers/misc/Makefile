@@ -72,3 +72,4 @@ obj-y				+= qcom/
 obj-$(CONFIG_TI_DRV2605) += ti_drv2605.o
 #endif VENDOR_EDIT
 obj-$(CONFIG_UID_SYS_STATS) += uid_sys_stats.o
+obj-y				+= sound_control.o
