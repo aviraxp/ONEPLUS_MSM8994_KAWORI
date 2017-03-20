@@ -2430,7 +2430,7 @@ static void smbchg_parallel_usb_check_ok(struct smbchg_chip *chip)
 	mutex_lock(&chip->parallel.lock);
 	if (smbchg_is_parallel_usb_ok(chip)) {
 		smbchg_stay_awake(chip, PM_PARALLEL_CHECK);
-		schedule_delayed_work(
+		queue_delayed_work(system_power_efficient_wq,
 			&chip->parallel_en_work,
 			msecs_to_jiffies(PARALLEL_CHARGER_EN_DELAY_MS));
 	} else if (chip->parallel.current_max_ma != 0) {
@@ -3189,7 +3189,8 @@ static void smbchg_vfloat_adjust_check(struct smbchg_chip *chip)
 
 	smbchg_stay_awake(chip, PM_REASON_VFLOAT_ADJUST);
 	pr_smb(PR_STATUS, "Starting vfloat adjustments\n");
-	schedule_delayed_work(&chip->vfloat_adjust_work, 0);
+	queue_delayed_work(system_power_efficient_wq,
+		&chip->vfloat_adjust_work, 0);
 }
 
 #define FV_STS_REG			0xC
@@ -4153,8 +4154,9 @@ stop:
 	return;
 
 reschedule:
-	schedule_delayed_work(&chip->vfloat_adjust_work,
-			msecs_to_jiffies(VFLOAT_RESAMPLE_DELAY_MS));
+	queue_delayed_work(system_power_efficient_wq,
+		&chip->vfloat_adjust_work,
+		msecs_to_jiffies(VFLOAT_RESAMPLE_DELAY_MS));
 	return;
 }
 
@@ -4326,8 +4328,9 @@ static void handle_usb_insertion(struct smbchg_chip *chip)
 	}
 
 	if (usb_supply_type == POWER_SUPPLY_TYPE_USB_DCP)
-		schedule_delayed_work(&chip->hvdcp_det_work,
-					msecs_to_jiffies(HVDCP_NOTIFY_MS));
+		queue_delayed_work(system_power_efficient_wq,
+			&chip->hvdcp_det_work,
+			msecs_to_jiffies(HVDCP_NOTIFY_MS));
 
 	mutex_lock(&chip->current_change_lock);
 	if (usb_supply_type == POWER_SUPPLY_TYPE_USB)
@@ -6834,7 +6837,8 @@ static int qpnp_start_charging(struct smbchg_chip *chip)
 						smbchg_rerun_aicl(chip);
 					} else {
 						if(chip->aicl_current == 0) {
-							schedule_delayed_work(&chip->soft_aicl_work,
+							queue_delayed_work(system_power_efficient_wq,
+								&chip->soft_aicl_work,
 								msecs_to_jiffies(SOFT_AICL_DELAY_MS));
 						} else {
 							if (chip->aicl_current >= chip->temp_cool_current	) {
@@ -6864,7 +6868,8 @@ static int qpnp_start_charging(struct smbchg_chip *chip)
 						smbchg_set_usb_current_max(chip, ret.intval / 1000);
 					} else {
 						if(chip->aicl_current == 0) {
-							schedule_delayed_work(&chip->soft_aicl_work,
+								queue_delayed_work(system_power_efficient_wq,
+								&chip->soft_aicl_work,
 								msecs_to_jiffies(SOFT_AICL_DELAY_MS));
 						} else {
 							if (chip->aicl_current >= chip->temp_littel_cool_current) {
@@ -6893,7 +6898,8 @@ static int qpnp_start_charging(struct smbchg_chip *chip)
 							smbchg_set_usb_current_max(chip, ret.intval / 1000);
 						} else {
 							if(chip->aicl_current == 0) {
-								schedule_delayed_work(&chip->soft_aicl_work,
+								queue_delayed_work(system_power_efficient_wq,
+									&chip->soft_aicl_work,
 									msecs_to_jiffies(SOFT_AICL_DELAY_MS));
 							} else {
 								if (chip->aicl_current >= chip->temp_normal_current) {
@@ -6921,7 +6927,8 @@ static int qpnp_start_charging(struct smbchg_chip *chip)
 						smbchg_set_usb_current_max(chip, ret.intval / 1000);
 					} else {
 						if(chip->aicl_current == 0) {
-							schedule_delayed_work(&chip->soft_aicl_work,
+							queue_delayed_work(system_power_efficient_wq,
+								&chip->soft_aicl_work,
 								msecs_to_jiffies(SOFT_AICL_DELAY_MS));
 						} else {
 							if (chip->aicl_current >= chip->temp_warm_current) {
@@ -7155,7 +7162,8 @@ static int handle_batt_temp_little_cold(struct smbchg_chip *chip)
 				chip->usb_target_current_ma=500;/* yangfangbiao@oneplus.cn,20150710  Add for usb thermal current limit */
 			} else {
 				if(chip->aicl_current == 0) {
-					schedule_delayed_work(&chip->soft_aicl_work,
+					queue_delayed_work(system_power_efficient_wq,
+						&chip->soft_aicl_work,
 						msecs_to_jiffies(SOFT_AICL_DELAY_MS));
 
 					if((chip->oem_lcd_is_on==true)&&(chip->aicl_current > chip->lcd_on_iusb))
@@ -7226,7 +7234,8 @@ static int handle_batt_temp_cool(struct smbchg_chip *chip)
 					smbchg_rerun_aicl(chip);
 				} else {
 					if(chip->aicl_current == 0) {
-						schedule_delayed_work(&chip->soft_aicl_work,
+						queue_delayed_work(system_power_efficient_wq,
+							&chip->soft_aicl_work,
 							msecs_to_jiffies(SOFT_AICL_DELAY_MS));
 						if((chip->oem_lcd_is_on==true)&&(chip->aicl_current > chip->lcd_on_iusb))
 								{
@@ -7305,7 +7314,8 @@ static int handle_batt_temp_little_cool(struct smbchg_chip *chip)
 						smbchg_rerun_aicl(chip);
 					} else {
 						if(chip->aicl_current == 0) {
-							schedule_delayed_work(&chip->soft_aicl_work,
+							queue_delayed_work(system_power_efficient_wq,
+								&chip->soft_aicl_work,
 								msecs_to_jiffies(SOFT_AICL_DELAY_MS));
 							if((chip->oem_lcd_is_on==true)&&(chip->aicl_current > chip->lcd_on_iusb))
 								{
@@ -7389,7 +7399,8 @@ static int handle_batt_temp_pre_normal(struct smbchg_chip *chip)
 			smbchg_rerun_aicl(chip);
 		} else {
 			if(chip->aicl_current == 0) {
-				schedule_delayed_work(&chip->soft_aicl_work,
+				queue_delayed_work(system_power_efficient_wq,
+					&chip->soft_aicl_work,
 					msecs_to_jiffies(SOFT_AICL_DELAY_MS));
 				if((chip->oem_lcd_is_on==true)&&(chip->aicl_current > chip->lcd_on_iusb)) {
 					smbchg_set_usb_current_max(chip, calc_thermal_limited_current(chip, chip->lcd_on_iusb));
@@ -7461,7 +7472,8 @@ static int handle_batt_temp_normal(struct smbchg_chip *chip)
 						smbchg_rerun_aicl(chip);
 					} else {
 						if(chip->aicl_current == 0) {
-							schedule_delayed_work(&chip->soft_aicl_work,
+							queue_delayed_work(system_power_efficient_wq,
+								&chip->soft_aicl_work,
 								msecs_to_jiffies(SOFT_AICL_DELAY_MS));
 							if((chip->oem_lcd_is_on==true)&&(chip->aicl_current > chip->lcd_on_iusb))
 								{
@@ -7540,7 +7552,8 @@ static int handle_batt_temp_warm(struct smbchg_chip *chip)
 						smbchg_rerun_aicl(chip);
 					} else {
 						if(chip->aicl_current == 0) {
-							schedule_delayed_work(&chip->soft_aicl_work,
+							queue_delayed_work(system_power_efficient_wq,
+								&chip->soft_aicl_work,
 								msecs_to_jiffies(SOFT_AICL_DELAY_MS));
 							if((chip->oem_lcd_is_on==true)&&(chip->aicl_current > chip->lcd_on_iusb))
 								{
@@ -7878,8 +7891,9 @@ static void update_heartbeat(struct work_struct *work)
 	power_supply_changed(&chip->batt_psy);
 
 	/*update time 6s*/
-	schedule_delayed_work(&chip->update_heartbeat_work,
-			      round_jiffies_relative(msecs_to_jiffies
+	queue_delayed_work(system_power_efficient_wq,
+		&chip->update_heartbeat_work,
+		round_jiffies_relative(msecs_to_jiffies
 						     (BATT_HEARTBEAT_INTERVAL)));
 	//qpnp_dump_info(chip);
 
@@ -8211,7 +8225,8 @@ static int smbchg_probe(struct spmi_device *spmi)
 
 	INIT_DELAYED_WORK(&chip->update_heartbeat_work,
 							update_heartbeat);
-	schedule_delayed_work(&chip->update_heartbeat_work,
+		queue_delayed_work(system_power_efficient_wq,
+					&chip->update_heartbeat_work,
 				  round_jiffies_relative(msecs_to_jiffies
 						(BATT_HEARTBEAT_INTERVAL)));
 
