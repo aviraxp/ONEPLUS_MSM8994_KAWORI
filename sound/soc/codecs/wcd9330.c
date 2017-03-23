@@ -5537,11 +5537,11 @@ static int reg_access(unsigned int reg)
 			if (soundcontrol.hp_lock)
                                 ret = 0;
                         break;
-		case TOMTOM_A_CDC_TX6_VOL_CTL_GAIN:
+		case TOMTOM_A_CDC_TX7_VOL_CTL_GAIN:
 			if (soundcontrol.mic_lock)
 				ret = 0;
 			break;
-		case TOMTOM_A_CDC_TX4_VOL_CTL_GAIN:
+		case TOMTOM_A_CDC_TX6_VOL_CTL_GAIN:
 			if (soundcontrol.camera_mic_lock)
 				ret = 0;
 			break;
@@ -8994,12 +8994,12 @@ void update_mic_gain(unsigned int vol_boost)
 
 	soundcontrol.mic_lock = false;
 	tomtom_write(soundcontrol.snd_control_codec,
-		TOMTOM_A_CDC_TX6_VOL_CTL_GAIN, boosted_val);
+		TOMTOM_A_CDC_TX7_VOL_CTL_GAIN, boosted_val);
 	soundcontrol.mic_lock = true;
 
 	pr_info("Sound Control: Boosted Mic value %d\n",
 		tomtom_read(soundcontrol.snd_control_codec,
-		TOMTOM_A_CDC_TX6_VOL_CTL_GAIN));
+		TOMTOM_A_CDC_TX7_VOL_CTL_GAIN));
 }
 
 void update_camera_mic_gain(unsigned int vol_boost)
@@ -9010,13 +9010,13 @@ void update_camera_mic_gain(unsigned int vol_boost)
 	pr_info("Sound Control: Camera mic default value %d\n", default_val);
 
         soundcontrol.camera_mic_lock = false;
-        	tomtom_write(soundcontrol.snd_control_codec,
-                TOMTOM_A_CDC_TX4_VOL_CTL_GAIN, boosted_val);
+        tomtom_write(soundcontrol.snd_control_codec,
+                TOMTOM_A_CDC_TX6_VOL_CTL_GAIN, boosted_val);
         soundcontrol.camera_mic_lock = true;
 
         pr_info("Sound Control: Boosted Camera mic value %d\n",
                 tomtom_read(soundcontrol.snd_control_codec,
-                TOMTOM_A_CDC_TX4_VOL_CTL_GAIN));
+                TOMTOM_A_CDC_TX6_VOL_CTL_GAIN));
 }
 
 static int tomtom_codec_probe(struct snd_soc_codec *codec)
@@ -9030,6 +9030,8 @@ static int tomtom_codec_probe(struct snd_soc_codec *codec)
 	int i, rco_clk_rate;
 	void *ptr = NULL;
 	struct wcd9xxx_core_resource *core_res;
+
+	soundcontrol.snd_control_codec = codec;
 
 	codec->control_data = dev_get_drvdata(codec->dev->parent);
 	control = codec->control_data;
@@ -9229,9 +9231,9 @@ static int tomtom_codec_probe(struct snd_soc_codec *codec)
 	soundcontrol.default_hp_value = tomtom_read(codec,
 		TOMTOM_A_CDC_RX1_VOL_CTL_B2_CTL);
 	soundcontrol.default_mic_value = tomtom_read(codec,
-		TOMTOM_A_CDC_TX6_VOL_CTL_GAIN);
+		TOMTOM_A_CDC_TX7_VOL_CTL_GAIN);
 	soundcontrol.default_camera_mic_value = tomtom_read(codec,
-                TOMTOM_A_CDC_TX4_VOL_CTL_GAIN);
+                TOMTOM_A_CDC_TX6_VOL_CTL_GAIN);
 
 	return ret;
 
