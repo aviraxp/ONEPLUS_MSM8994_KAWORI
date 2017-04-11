@@ -629,7 +629,7 @@ config QCOM_LIQUID_DOCK
 	  LiQUID Mobile Development Platforms.
 
 config UID_SYS_STATS
-	tristate "Per-UID statistics"
+	bool "Per-UID statistics"
 	depends on PROFILING && TASK_XACCT && TASK_IO_ACCOUNTING
 	help
 	  Per UID based cpu time statistics exported to /proc/uid_cputime
