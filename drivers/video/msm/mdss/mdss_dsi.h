@@ -464,6 +464,7 @@ struct dsi_status_data {
 	struct notifier_block fb_notifier;
 	struct delayed_work check_status;
 	struct msm_fb_data_type *mfd;
+	struct work_struct irq_done;
 };
 
 int dsi_panel_device_register(struct device_node *pan_node,
