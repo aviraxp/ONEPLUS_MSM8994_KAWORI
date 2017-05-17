@@ -619,5 +619,11 @@ config REGULATOR_CPR
 	  suggestions in efuse as initial settings. It converts corner vote
 	  to voltage value before writing to a voltage regulator API, such as
 	  that provided by spm-regulator driver.
+	  
+config VOLTAGE_CONTROL
+	bool "Enable CPU voltage control"
+	help
+	  Enable CPU voltage control for MSM8994.
+
 endif
 
