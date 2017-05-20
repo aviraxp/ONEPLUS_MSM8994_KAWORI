@@ -31,11 +31,6 @@
 #include <linux/spinlock.h>
 #include <linux/pinctrl/consumer.h>
 
-#ifdef VENDOR_EDIT
-//hefaxi@filesystems, 2015/07/03, add for force dump function
-#include <linux/oem_force_dump.h>
-#endif
-
 struct gpio_button_data {
 	const struct gpio_keys_button *button;
 	struct input_dev *input;
