@@ -171,12 +171,6 @@ obj-$(CONFIG_SENSORS_SSC)	+= sensors/
 obj-y 	+= param_read_write/
 #endif
 
-#add by jiachenghui for support oem trace,2015/05/09
-#ifdef VENDOR_EDIT
-obj-$(CONFIG_OEM_DEBUG_SUPORT) 	+= oem_debug/
-#endif
-#end add by jiachenghui for support oem trace,2015/05/09
-
 #ifdef VENDOR_EDIT
 #ted_lin@PerfLab add for op helper function
 obj-y += op/
