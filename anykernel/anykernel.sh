@@ -320,11 +320,6 @@ dump_boot;
 
 ############### Ramdisk customization start ###############
 
-# AnyKernel permissions
-chmod 755 $ramdisk/sbin/busybox
-chmod -R 755 $ramdisk/res/bc
-chmod -R 755 $ramdisk/res/misc
-
 # ramdisk changes
 backup_file default.prop;
 replace_string default.prop "ro.adb.secure=0" "ro.adb.secure=1" "ro.adb.secure=0";
