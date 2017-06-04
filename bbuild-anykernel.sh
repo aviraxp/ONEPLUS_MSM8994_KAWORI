@@ -246,7 +246,7 @@ step4_prepare_anykernel()
 	cd $REPACK_PATH
 	KERNELNAME="Flashing $KERNEL_NAME $KAWORI_VERSION"
 	sed -i "s;###kernelname###;${KERNELNAME};" META-INF/com/google/android/update-binary;
-	COPYRIGHT="(c) Lord KAWORI (aka andip71), $(date +%Y.%m.%d-%H:%M:%S)"
+	COPYRIGHT="(c) Lord Boeffla (aka andip71), Aviraxp, $(date +%Y.%m.%d-%H:%M:%S)"
 	sed -i "s;###copyright###;${COPYRIGHT};" META-INF/com/google/android/update-binary;
 }
 
