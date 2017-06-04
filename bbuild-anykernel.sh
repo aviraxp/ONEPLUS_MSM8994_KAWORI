@@ -200,7 +200,7 @@ step4_prepare_anykernel()
 
 	# copy anykernel template over
 	cd $REPACK_PATH
-	cp -R $BUILD_PATH/anykernel_kawori/* .
+	cp -R $BUILD_PATH/anykernel/* .
 
 	# delete placeholder files
 	find . -name placeholder -delete
