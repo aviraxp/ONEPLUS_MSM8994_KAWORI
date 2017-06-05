@@ -73,11 +73,6 @@ fi;
 chmod -R 755 /tmp/anykernel/tools /tmp/anykernel/bin;
 bb=/tmp/anykernel/tools/busybox;
 
-ui_print "###kernelname###";
-ui_print " ";
-ui_print "###copyright###";
-ui_print " ";
-
 mount -o ro /system;
 mount /data;
 
