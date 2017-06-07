@@ -338,11 +338,6 @@ static void gpio_keys_gpio_report_event(struct gpio_button_data *bdata)
 		input_event(input, type, button->code, !!state);
 	}
 	input_sync(input);
-
-#ifdef VENDOR_EDIT
-//hefaxi@filesystems, 2015/07/03, add for force dump function
-    oem_check_force_dump_key(button->code,state);
-#endif
 }
 
 static void gpio_keys_gpio_work_func(struct work_struct *work)
