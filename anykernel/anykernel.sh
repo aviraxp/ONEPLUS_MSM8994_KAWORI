@@ -322,7 +322,11 @@ dump_boot;
 
 # ramdisk changes
 backup_file init.qcom.rc
-replace_line init.qcom.rc "group system inet net_admin wifi" "group system inet net_admin wifi radio net_raw";
+replace_line init.qcom.rc "group system inet net_admin wifi" "     oneshot";
+
+backup_file init.qcom.power.rc
+remove_line init.qcom.power.rc "insmod /system/lib/modules/hcube.ko"
+remove_line "write /sys/class/kgsl/kgsl-3d0/default_pwrlevel 5"
 
 ############### Ramdisk customization end ###############
 
