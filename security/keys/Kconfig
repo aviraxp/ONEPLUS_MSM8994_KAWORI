@@ -19,6 +19,10 @@ config KEYS
 
 	  If you are unsure as to whether this is required, answer N.
 
+config KEYS_COMPAT
+	def_bool y
+	depends on COMPAT && KEYS
+
 config TRUSTED_KEYS
 	tristate "TRUSTED KEYS"
 	depends on KEYS && TCG_TPM
