@@ -154,7 +154,7 @@
 					linux,name = "button-backlight";
 					linux,default-trigger = "none";
 				qcom,default-state = "off";
-				qcom,max-current = <40>;
+				qcom,max-current = <5>;
 				qcom,current-setting = <5>;
 				qcom,id = <6>;
 				qcom,mode = "manual";
