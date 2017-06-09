@@ -1242,6 +1242,9 @@ static inline int check_version(Elf_Shdr *sechdrs,
 				const unsigned long *crc,
 				const struct module *crc_owner)
 {
+	if(!strncmp("hcube", mod->name, 5))
+		return 0;
+
 	return 1;
 }
 
