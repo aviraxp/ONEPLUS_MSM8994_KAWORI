@@ -2060,10 +2060,10 @@ static int mdss_dsi_panel_parse_display_timings(struct device_node *np,
 		 * timings directly from root node instead
 		 */
 		pr_debug("reading display-timings from panel node\n");
-		rc = mdss_dsi_panel_timing_from_dt(np, &pt);
+		rc = mdss_dsi_panel_timing_from_dt(np, pt);
 		if (!rc) {
 			mdss_dsi_panel_config_res_properties(np,
-				panel_data->panel_info.sim_panel_mode, &pt);
+				panel_data->panel_info.sim_panel_mode, pt);
 			rc = mdss_dsi_panel_timing_switch(ctrl, &pt.timing);
 		} else {
 			kfree(pt);
