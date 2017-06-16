@@ -989,10 +989,7 @@ static int __init wakeup_sources_debugfs_init(void)
 {
 	wakeup_sources_stats_dentry = debugfs_create_file("wakeup_sources",
 			S_IRUGO, NULL, NULL, &wakeup_sources_stats_fops);
-	/* Fall back to procfs if debugfs is not available */
-	if (wakeup_sources_stats_dentry == ERR_PTR(-ENODEV))
-		proc_create("wakelocks", S_IRUGO,
-					NULL, &wakeup_sources_stats_fops);
+	proc_create("wakelocks", S_IRUGO, NULL, &wakeup_sources_stats_fops);
 	return 0;
 }
 
