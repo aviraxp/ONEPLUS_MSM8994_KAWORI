@@ -351,35 +351,14 @@ static void synaptics_ts_probe_func(struct work_struct *w)
 
 static int oem_synaptics_ts_probe(struct i2c_client *client, const struct i2c_device_id *id)
 {
-	int i;
 	//unsigned long flags;
 	//spinlock_t oem_lock;
 	optimize_data.client = client;
 	optimize_data.dev_id = id;
 	optimize_data.workqueue = create_workqueue("tpd_probe_optimize");
 	INIT_DELAYED_WORK(&(optimize_data.work), synaptics_ts_probe_func);
-	printk("boot_time: before optimize [synaptics_ts_probe]  on cpu %d\n",smp_processor_id());
 	//spin_lock_irqsave(&oem_lock, flags);
-	if(get_boot_mode() == MSM_BOOT_MODE__NORMAL)
-	{
-
-		//get_online_cpus();
-		for (i = 0; i <= 3; i++)
-              {
-                      printk("boot_time: [synaptics_ts_probe] CPU%d is %s\n",i,cpu_is_offline(i)?"offline":"online");
-			 if (cpu_is_offline(i) || i == smp_processor_id())
-                      {
-                           continue;
-                      }
-			queue_delayed_work_on(i,optimize_data.workqueue,&(optimize_data.work),msecs_to_jiffies(300));
-			//put_online_cpus();
-                     break;
-	       }
-	}
-	else
-	{
-		queue_delayed_work_on(0,optimize_data.workqueue,&(optimize_data.work),msecs_to_jiffies(300));
-	}
+	queue_delayed_work(optimize_data.workqueue,&(optimize_data.work),msecs_to_jiffies(300));
 	//flush_workqueue(optimize_data.workqueue);
 	//spin_unlock_irqrestore(&oem_lock, flags);
 	return probe_ret;
