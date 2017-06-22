@@ -116,6 +116,9 @@
 		/* POPP */
 		qcom,popp-enable;
 
+		/* L2PC */
+		qcom,l2pc-cpu-mask = <0x000000F0>;
+
 		/* Power levels */
 		qcom,gpu-pwrlevels {
 			#address-cells = <1>;
