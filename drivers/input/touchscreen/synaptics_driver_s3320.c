@@ -355,7 +355,8 @@ static int oem_synaptics_ts_probe(struct i2c_client *client, const struct i2c_de
 	//spinlock_t oem_lock;
 	optimize_data.client = client;
 	optimize_data.dev_id = id;
-	optimize_data.workqueue = create_workqueue("tpd_probe_optimize");
+	optimize_data.workqueue = alloc_workqueue("tpd_probe_optimize", WQ_HIGHPRI |
+			WQ_UNBOUND | WQ_MEM_RECLAIM, 1);
 	INIT_DELAYED_WORK(&(optimize_data.work), synaptics_ts_probe_func);
 	//spin_lock_irqsave(&oem_lock, flags);
 	queue_delayed_work(optimize_data.workqueue,&(optimize_data.work),msecs_to_jiffies(300));
