@@ -300,11 +300,8 @@ static char *fg_batt_type;
 module_param_named(
 	battery_type, fg_batt_type, charp, S_IRUSR | S_IWUSR
 );
-#ifdef VENDOR_EDIT
-static int fg_sram_update_period_ms =  6000;
-#else
+
 static int fg_sram_update_period_ms = 30000;
-#endif
 
 module_param_named(
 	sram_update_period_ms, fg_sram_update_period_ms, int, S_IRUSR | S_IWUSR
