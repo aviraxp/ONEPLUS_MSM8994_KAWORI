@@ -443,10 +443,8 @@ static void stmvl6180_work_handler(struct work_struct *work)
 			stmvl6180_ps_read_measurement(client);
 			if (vl6180_data->ps_is_singleshot)
 				to_startPS = 1;
-		}else
-			pr_err("enable_ps_sensor is %d\n", vl6180_data->enable_ps_sensor);
-	}else
-		pr_err("%s:%d ret %d\n", __func__, __LINE__, ret);
+		}
+	}
 #else
 	VL6180x_RangeGetInterruptStatus(vl6180x_dev, &gpio_status);
 	VL6180x_RdByte(vl6180x_dev, RESULT_RANGE_STATUS, &range_status);
