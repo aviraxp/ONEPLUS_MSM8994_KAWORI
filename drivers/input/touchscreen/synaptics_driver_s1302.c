@@ -1828,6 +1828,7 @@ static int fb_notifier_callback(struct notifier_block *self, unsigned long event
 			ts->suspended = 1;
 			queue_work(system_highpri_wq, &ts->pm_work);
 		}
+		break;
 	}
 
 	return NOTIFY_OK;
