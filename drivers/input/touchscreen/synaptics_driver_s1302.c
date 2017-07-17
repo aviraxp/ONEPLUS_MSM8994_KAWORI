@@ -1441,12 +1441,13 @@ static void synaptics_suspend_resume(struct work_struct *work)
 	struct synaptics_ts_data *ts =
 		container_of(work, typeof(*ts), pm_work);
 
-	if (ts->suspended)
+	if (ts->suspended) {
 		synaptics_ts_resume(&ts->client->dev);
 		ts->suspended = 0;
-	else
+	} else {
 		ts->suspended = 1;
 		synaptics_ts_suspend(&ts->client->dev);
+	}
 }
 
 static int synaptics_parse_dts(struct device *dev, struct synaptics_ts_data *ts)
