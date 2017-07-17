@@ -2969,11 +2969,12 @@ static void synaptics_suspend_resume(struct work_struct *work)
 		container_of(work, typeof(*ts), pm_work);
 
 	if (ts->is_suspended) {
-		atomic_set(&ts->is_stop, 1);
-		synaptics_ts_suspend(&ts->client->dev);
-	} else {
-		atomic_set(&ts->is_stop, 0);
 		synaptics_ts_resume(&ts->client->dev);
+		ts->is_suspended = 0;
+		atomic_set(&ts->is_stop, 0);
+	} else {
+		synaptics_ts_suspend(&ts->client->dev);
+		ts->is_suspended = 1;
 	}
 }
 
@@ -3462,26 +3463,25 @@ static int fb_notifier_callback(struct notifier_block *self, unsigned long event
 	struct fb_event *evdata = data;
 	int *blank = evdata->data;
 
-	if (event = FB_EARLY_EVENT_BLANK) {
+	if (event == FB_EARLY_EVENT_BLANK) {
 		switch (*blank) {
 		case FB_BLANK_UNBLANK:
 		case FB_BLANK_VSYNC_SUSPEND:
-			if (ts->is_suspended) {
-				ts->is_suspended = 0;
+			if (ts->is_suspended)
 				queue_work(system_highpri_wq, &ts->pm_work);
-			}
 			break;
 		case FB_BLANK_POWERDOWN:
-			if (!ts->is_suspended) {
-				ts->is_suspended = 1;
-				queue_work(system_highpri_wq, &ts->pm_work);
-			}
+			atomic_set(&ts->is_stop, 1);
 			break;
 		}
-	} else if (event = FB_EVENT_BLANK) {
+	} else if (event == FB_EVENT_BLANK) {
 		switch (*blank) {
 		case FB_BLANK_UNBLANK:
 			queue_delayed_work(synaptics_wq, &ts->speed_up_work, msecs_to_jiffies(5));
+			break;
+		case FB_BLANK_POWERDOWN:
+			if (!ts->is_suspended)
+				queue_work(system_highpri_wq, &ts->pm_work);
 			break;
 		}
 	}
