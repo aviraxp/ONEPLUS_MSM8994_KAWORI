@@ -1442,9 +1442,11 @@ static void synaptics_suspend_resume(struct work_struct *work)
 		container_of(work, typeof(*ts), pm_work);
 
 	if (ts->suspended)
-		synaptics_ts_suspend(&ts->client->dev);
-	else
 		synaptics_ts_resume(&ts->client->dev);
+		ts->suspended = 0;
+	else
+		ts->suspended = 1;
+		synaptics_ts_suspend(&ts->client->dev);
 }
 
 static int synaptics_parse_dts(struct device *dev, struct synaptics_ts_data *ts)
@@ -1819,13 +1821,11 @@ static int fb_notifier_callback(struct notifier_block *self, unsigned long event
 	switch (*blank) {
 	case FB_BLANK_UNBLANK:
 		if (ts->suspended) {
-			ts->suspended = 0;
 			queue_work(system_highpri_wq, &ts->pm_work);
 		}
 		break;
 	case FB_BLANK_POWERDOWN:
 		if (!ts->suspended) {
-			ts->suspended = 1;
 			queue_work(system_highpri_wq, &ts->pm_work);
 		}
 		break;
