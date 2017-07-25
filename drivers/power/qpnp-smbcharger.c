@@ -496,6 +496,10 @@ extern int  load_battery_profile_done_allow_check_temp_set_current;
 #endif
 #endif
 
+#ifdef CONFIG_CHARGE_LEVEL
+	struct smbchg_chip *chg_cache;
+#endif
+
 static int smbchg_read(struct smbchg_chip *chip, u8 *val,
 			u16 addr, int count)
 {
@@ -8055,6 +8059,36 @@ module_param_call(pmi_reset_type, set_pmi_reset_type,
 #endif
 #endif
 
+#ifdef CONFIG_CHARGE_LEVEL
+int get_bk_current_now (void)
+{
+	int curr;
+
+	// get current and convert to mA (positive = charging, negative = discharging)
+	curr = (get_prop_batt_current_now(chg_cache) / 1000) * -1;
+
+	// we are only interested in charging value, set it to 0 otherwise
+	if (curr < 0)
+		curr = 0;
+
+	return curr;
+}
+
+int get_bk_charger_type (void)
+{
+	enum power_supply_type usb_supply_type;
+	char *usb_type_name = "null";
+
+	// check if any type of charger is connected at all
+	if (!(chg_cache->dc_present) && !(chg_cache->usb_present))
+		return POWER_SUPPLY_TYPE_UNKNOWN;
+
+	// read charger type and return back
+	read_usb_type(chg_cache, &usb_type_name, &usb_supply_type);	
+	return usb_supply_type;
+}
+#endif
+
 static int smbchg_probe(struct spmi_device *spmi)
 {
 	int rc;
@@ -8084,6 +8118,11 @@ static int smbchg_probe(struct spmi_device *spmi)
 		dev_err(&spmi->dev, "Unable to allocate memory\n");
 		return -ENOMEM;
 	}
+
+#ifdef CONFIG_CHARGE_LEVEL
+	// store pointer to smbchg_chip struct in cache
+	chg_cache = chip;
+#endif
 
 	INIT_WORK(&chip->usb_set_online_work, smbchg_usb_update_online_work);
 	INIT_DELAYED_WORK(&chip->parallel_en_work,
