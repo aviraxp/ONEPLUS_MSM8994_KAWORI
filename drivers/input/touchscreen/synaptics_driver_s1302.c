@@ -1667,7 +1667,7 @@ static int synaptics_ts_probe(struct i2c_client *client, const struct i2c_device
 #if defined(CONFIG_FB)
 	ts->suspended = 0;
 	ts->fb_notif.notifier_call = fb_notifier_callback;
-	ts->fb_notif.priority = 1;
+	ts->fb_notif.priority = INT_MAX;
 	ret = fb_register_client(&ts->fb_notif);
 	if(ret)
 		TPD_ERR("Unable to register fb_notifier: %d\n", ret);
