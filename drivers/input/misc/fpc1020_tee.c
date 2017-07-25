@@ -1143,6 +1143,7 @@ static int fpc1020_probe(struct spi_device *spi)
 
     #if defined(CONFIG_FB)
 	fpc1020->fb_notif.notifier_call = fb_notifier_callback;
+	fpc1020->fb_notif.priority = INT_MAX;
 	rc = fb_register_client(&fpc1020->fb_notif);
 	if(rc)
 		dev_err(fpc1020->dev, "Unable to register fb_notifier: %d\n", rc);
