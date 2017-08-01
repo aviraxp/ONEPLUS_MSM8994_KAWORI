@@ -4565,7 +4565,8 @@ static void hub_port_connect_change(struct usb_hub *hub, int port1,
 	unsigned wHubCharacteristics =
 			le16_to_cpu(hub->descriptor->wHubCharacteristics);
 	struct usb_device *udev;
-	int status, i;
+	int status = -ENODEV;
+	int i;
 	unsigned unit_load;
 
 	dev_dbg (hub_dev,
@@ -4795,8 +4796,10 @@ loop:
  
 done:
 	hub_port_disable(hub, port1, 1);
-	if (hcd->driver->relinquish_port && !hub->hdev->parent)
-		hcd->driver->relinquish_port(hcd, port1);
+	if (hcd->driver->relinquish_port && !hub->hdev->parent) {
+		if (status != -ENOTCONN && status != -ENODEV)
+			hcd->driver->relinquish_port(hcd, port1);
+	}
 }
 
 /* Returns 1 if there was a remote wakeup and a connect status change. */
