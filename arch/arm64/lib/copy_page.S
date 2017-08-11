@@ -27,10 +27,10 @@
  *	x1 - src
  */
 ENTRY(copy_page)
-	# Prefetch two cache lines ahead.
-	prfm    pldl1strm, [x1, #128]
-	prfm    pldl1strm, [x1, #256]
-
+	// Prefetch three cache lines ahead.
+	prfm	pldl1strm, [x1, #128]
+	prfm	pldl1strm, [x1, #256]
+	prfm	pldl1strm, [x1, #384]
 	ldp	x2, x3, [x1]
 	ldp	x4, x5, [x1, #16]
 	ldp	x6, x7, [x1, #32]
@@ -45,7 +45,7 @@ ENTRY(copy_page)
 1:
 	subs	x18, x18, #128
 
-	prfm    pldl1strm, [x1, #384]
+	prfm	pldl1strm, [x1, #384]
 
 	stnp	x2, x3, [x0]
 	ldp	x2, x3, [x1]
