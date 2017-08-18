@@ -261,10 +261,6 @@ static void mdss_fb_set_bl_brightness(struct led_classdev *led_cdev,
 {
 	struct msm_fb_data_type *mfd = dev_get_drvdata(led_cdev->dev->parent);
 	int bl_lvl;
-	#ifdef VENDOR_EDIT
-        /*ykl add for debug lcd issue*/
-	static int count = 1;	
-	#endif
 
 	if (mfd->boot_notification_led) {
 		led_trigger_event(mfd->boot_notification_led, 0);
@@ -273,16 +269,6 @@ static void mdss_fb_set_bl_brightness(struct led_classdev *led_cdev,
 
 	if (value > mfd->panel_info->brightness_max)
 		value = mfd->panel_info->brightness_max;
-
-	#ifdef VENDOR_EDIT  /*ykl add for debug lcd issue*/
-	if(count || !value){
-        printk("--------backlight level = %d---------\n",value);
-		count = 0;
-		}
-
-	if(!value)
-		count = 1;
-	#endif
 
 	// Boeffla: apply min/max limits for LCD backlight (0 is exception for display off)
 	if (value != 0)
