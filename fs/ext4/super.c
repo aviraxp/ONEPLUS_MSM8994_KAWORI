@@ -2225,7 +2225,7 @@ static void ext4_orphan_cleanup(struct super_block *sb,
 #ifdef CONFIG_QUOTA
 	/* Turn quotas off */
 	for (i = 0; i < MAXQUOTAS; i++) {
-		if (sb_dqopt(sb)->files[i])
+		if (EXT4_SB(sb)->s_qf_names[i] && sb_dqopt(sb)->files[i])
 			dquot_quota_off(sb, i);
 	}
 #endif
