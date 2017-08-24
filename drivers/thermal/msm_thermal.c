@@ -4229,6 +4229,12 @@ module_param_named(core_control_mask, msm_thermal_info.core_control_mask,
 module_param_named(freq_mitig_control_mask,
 		   msm_thermal_info.freq_mitig_control_mask, uint, 0644);
 
+/* Thermal aware scheduling */
+#ifdef VENDOR_EDIT
+extern unsigned int sysctl_thermal_aware_scheduling;
+module_param(sysctl_thermal_aware_scheduling, uint, 0644);
+#endif
+
 static ssize_t show_cc_enabled(struct kobject *kobj,
 		struct kobj_attribute *attr, char *buf)
 {
