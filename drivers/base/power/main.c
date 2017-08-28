@@ -34,6 +34,10 @@
 #include "../base.h"
 #include "power.h"
 
+#ifdef CONFIG_BOEFFLA_WL_BLOCKER
+void pm_print_active_wakeup_sources(void);
+#endif
+
 typedef int (*pm_callback_t)(struct device *);
 
 /*
@@ -658,6 +662,10 @@ static void dpm_resume_early(pm_message_t state)
 {
 	struct device *dev;
 	ktime_t starttime = ktime_get();
+
+#ifdef CONFIG_BOEFFLA_WL_BLOCKER
+	pm_print_active_wakeup_sources();
+#endif
 
 	mutex_lock(&dpm_list_mtx);
 	pm_transition = state;
