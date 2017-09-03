@@ -12,7 +12,7 @@
 
 KAWORI_VERSION="TEST"
 
-TOOLCHAIN="/home/aviraxp/Downloads/android_prebuilts_gcc_linux-x86_aarch64_aarch64-linux-android-4.9-ng7.1/bin/aarch64-linux-android-"
+TOOLCHAIN="/home/wanghan/gcc/bin/aarch64-linux-android-"
 ARCHITECTURE=arm64
 COMPILER_FLAGS_KERNEL=""
 COMPILER_FLAGS_MODULE=""
