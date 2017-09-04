@@ -155,7 +155,10 @@ static ssize_t store_offline_delay_ms(struct cpu_data *state,
 
 	for (i = 0; i < state->num_cpus; i++) {
 		c = &per_cpu(cpu_state, first_cpu);
-		c->offline_delay_ms = val[i];
+		if (ret == 1) 
+			c->offline_delay_ms = val[0];
+		else
+			c->offline_delay_ms = val[i];
 		first_cpu++;
 	}
 
@@ -178,7 +181,10 @@ static ssize_t store_online_delay_ms(struct cpu_data *state,
 
 	for (i = 0; i < state->num_cpus; i++) {
 		c = &per_cpu(cpu_state, first_cpu);
-		c->online_delay_ms = val[i];
+		if (ret == 1)
+			c->online_delay_ms = val[0];
+		else
+			c->online_delay_ms = val[i];
 		first_cpu++;
 	}
 
