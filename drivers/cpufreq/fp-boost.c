@@ -30,6 +30,7 @@
 #include <linux/cpufreq.h>
 #include <linux/input.h>
 #include <linux/slab.h>
+#include <linux/fb.h>
 
 /* Available bits for boost_policy state */
 #define DRIVER_ENABLED        (1U << 0)
@@ -308,6 +309,37 @@ static struct attribute_group cpu_fp_attr_group = {
 	.attrs = cpu_fp_attr,
 };
 
+static int fb_notifier_callback(struct notifier_block *nb,
+		unsigned long action, void *data)
+{
+	struct boost_policy *b = boost_policy_g;
+	struct fp_config *fp = &b->fp;
+	struct fb_event *evdata = data;
+	int *blank = evdata->data;
+
+	/* Parse framebuffer events as soon as they occur */
+	if (action != FB_EARLY_EVENT_BLANK)
+		return NOTIFY_OK;
+
+	switch (*blank) {
+	case FB_BLANK_UNBLANK:
+		if (touched) {
+			cancel_delayed_work(&fp->unboost_work);
+			queue_work(b->wq, &fp->unboost_work);
+		}
+		break;
+	default:
+		break;
+	}
+
+	return NOTIFY_OK;
+}
+
+static struct notifier_block fb_notifier_callback_nb = {
+	.notifier_call = fb_notifier_callback,
+	.priority = INT_MAX,
+};
+
 static int sysfs_fp_init(void)
 {
 	struct kobject *kobj;
@@ -380,7 +412,10 @@ static int __init cpu_fp_init(void)
 		goto input_unregister;
 
 	cpufreq_register_notifier(&do_cpu_boost_nb, CPUFREQ_POLICY_NOTIFIER);
+	fb_register_client(&fb_notifier_callback_nb);
+
 	set_boost_bit(b, DRIVER_ENABLED);
+
 	return 0;
 
 input_unregister:
