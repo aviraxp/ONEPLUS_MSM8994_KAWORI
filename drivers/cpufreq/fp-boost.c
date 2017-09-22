@@ -325,7 +325,7 @@ static int fb_notifier_callback(struct notifier_block *nb,
 	case FB_BLANK_UNBLANK:
 		if (touched) {
 			cancel_delayed_work(&fp->unboost_work);
-			queue_work(b->wq, &fp->unboost_work);
+			queue_delayed_work(b->wq, &fp->unboost_work, 0);
 		}
 		break;
 	default:
