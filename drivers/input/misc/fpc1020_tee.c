@@ -112,8 +112,6 @@ struct fpc1020_data {
 	int qup_id;
 	struct mutex lock;
 	bool prepared;
-	
-	bool wakeup_enabled;
 	bool clocks_enabled;
 	bool clocks_suspended;
 
@@ -856,32 +854,6 @@ static ssize_t spi_prepare_set(struct device *dev,
 }
 static DEVICE_ATTR(spi_prepare, S_IWUSR, NULL, spi_prepare_set);
 
-/**
- * sysfs node for controlling whether the driver is allowed
- * to wake up the platform on interrupt.
- */
-static ssize_t wakeup_enable_set(struct device *dev,
-	struct device_attribute *attr, const char *buf, size_t count)
-{
-	struct  fpc1020_data *fpc1020 = dev_get_drvdata(dev);
-
-	if (!strncmp(buf, "enable", strlen("enable")))
-	{
-		fpc1020->wakeup_enabled = true;
-		smp_wmb();
-	}
-	else if (!strncmp(buf, "disable", strlen("disable")))
-	{
-		fpc1020->wakeup_enabled = false;
-		smp_wmb();
-	}
-	else
-		return -EINVAL;
-
-	return count;
-}
-static DEVICE_ATTR(wakeup_enable, S_IWUSR, NULL, wakeup_enable_set);
-
 static ssize_t proximity_state_set(struct device *dev,
                                    struct device_attribute *attr,
                                    const char *buf, size_t count)
@@ -917,7 +889,6 @@ static struct attribute *attributes[] = {
 	&dev_attr_regulator_enable.attr,
 	&dev_attr_bus_lock.attr,
 	&dev_attr_hw_reset.attr,
-	&dev_attr_wakeup_enable.attr,
 	&dev_attr_proximity_state.attr,
 	NULL
 };
