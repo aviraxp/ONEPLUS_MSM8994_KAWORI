@@ -162,6 +162,9 @@ struct l2tp_tunnel_cfg {
 
 struct l2tp_tunnel {
 	int			magic;		/* Should be L2TP_TUNNEL_MAGIC */
+
+	unsigned long		dead;
+
 	struct rcu_head rcu;
 	rwlock_t		hlist_lock;	/* protect session_hlist */
 	struct hlist_head	session_hlist[L2TP_HASH_SIZE];
@@ -244,7 +247,7 @@ extern struct l2tp_tunnel *l2tp_tunnel_find_nth(struct net *net, int nth);
 
 extern int l2tp_tunnel_create(struct net *net, int fd, int version, u32 tunnel_id, u32 peer_tunnel_id, struct l2tp_tunnel_cfg *cfg, struct l2tp_tunnel **tunnelp);
 extern void l2tp_tunnel_closeall(struct l2tp_tunnel *tunnel);
-extern int l2tp_tunnel_delete(struct l2tp_tunnel *tunnel);
+extern void l2tp_tunnel_delete(struct l2tp_tunnel *tunnel);
 extern struct l2tp_session *l2tp_session_create(int priv_size, struct l2tp_tunnel *tunnel, u32 session_id, u32 peer_session_id, struct l2tp_session_cfg *cfg);
 extern void __l2tp_session_unhash(struct l2tp_session *session);
 extern int l2tp_session_delete(struct l2tp_session *session);
