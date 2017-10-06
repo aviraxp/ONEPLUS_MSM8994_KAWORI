@@ -174,9 +174,8 @@ static int scm_remap_error(int err)
 	case SCM_ENOMEM:
 		return -ENOMEM;
 	case SCM_EBUSY:
-		return SCM_EBUSY;
 	case SCM_V2_EBUSY:
-		return SCM_V2_EBUSY;
+		return -EBUSY;
 	}
 	return -EINVAL;
 }
@@ -327,11 +326,11 @@ static int _scm_call_retry(u32 svc_id, u32 cmd_id, const void *cmd_buf,
 	do {
 		ret = scm_call_common(svc_id, cmd_id, cmd_buf, cmd_len,
 					resp_buf, resp_len, cmd, len);
-		if (ret == SCM_EBUSY)
+		if (ret == -EBUSY)
 			msleep(SCM_EBUSY_WAIT_MS);
-	} while (ret == SCM_EBUSY && (retry_count++ < SCM_EBUSY_MAX_RETRY));
+	} while (ret == -EBUSY && (retry_count++ < SCM_EBUSY_MAX_RETRY));
 
-	if (ret == SCM_EBUSY)
+	if (ret == -EBUSY)
 		pr_err("scm: secure world busy (rc = SCM_EBUSY)\n");
 
 	return ret;
@@ -753,7 +752,7 @@ int scm_call(u32 svc_id, u32 cmd_id, const void *cmd_buf, size_t cmd_len,
 
 	ret = scm_call_common(svc_id, cmd_id, cmd_buf, cmd_len, resp_buf,
 				resp_len, cmd, len);
-	if (unlikely(ret == SCM_EBUSY))
+	if (unlikely(ret == -EBUSY))
 		ret = _scm_call_retry(svc_id, cmd_id, cmd_buf, cmd_len,
 				      resp_buf, resp_len, cmd, PAGE_ALIGN(len));
 	kfree(cmd);
