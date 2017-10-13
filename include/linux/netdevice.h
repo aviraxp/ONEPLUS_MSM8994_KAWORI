@@ -2599,6 +2599,8 @@ extern void		ether_setup(struct net_device *dev);
 extern struct net_device *alloc_netdev_mqs(int sizeof_priv, const char *name,
 				       void (*setup)(struct net_device *),
 				       unsigned int txqs, unsigned int rxqs);
+extern int dev_get_valid_name(struct net *net, struct net_device *dev,
+		       const char *name);
 #define alloc_netdev(sizeof_priv, name, setup) \
 	alloc_netdev_mqs(sizeof_priv, name, setup, 1, 1)
 
