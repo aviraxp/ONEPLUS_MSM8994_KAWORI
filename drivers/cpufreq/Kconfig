@@ -227,12 +227,6 @@ config CPU_BOOST
 
 	  If in doubt, say N.
 
-config CPU_INPUT_BOOST
-	bool "CPU Input Boost"
-	help
-	  Boosts the CPU on touchscreen and touchpad input. Boost frequencies and
-	  duration are configured via sysfs (/sys/kernel/cpu_input_boost/*).
-
 config FINGERPRINT_BOOST
 	bool "Fingerprint Boost"
 	default y
