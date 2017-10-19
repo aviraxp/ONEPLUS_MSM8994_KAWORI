@@ -888,7 +888,7 @@ static int f2fs_readdir(struct file *file, void *dirent, filldir_t filldir)
 		/* allow readdir() to be interrupted */
 		if (fatal_signal_pending(current)) {
 			err = -ERESTARTSYS;
-			goto out_free;
+			goto out;
 		}
 		cond_resched();
 
