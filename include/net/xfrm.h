@@ -293,7 +293,8 @@ struct xfrm_policy_afinfo {
 					       const xfrm_address_t *saddr,
 					       const xfrm_address_t *daddr,
 					       u32 mark);
-	int			(*get_saddr)(struct net *net, xfrm_address_t *saddr,
+	int			(*get_saddr)(struct net *net,
+					     xfrm_address_t *saddr,
 					     xfrm_address_t *daddr,
 					     u32 mark);
 	void			(*decode_session)(struct sk_buff *skb,
