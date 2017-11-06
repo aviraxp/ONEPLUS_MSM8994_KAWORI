@@ -1096,13 +1096,6 @@ fb_blank(struct fb_info *info, int blank)
 #ifdef VENDOR_EDIT
 	debug_blank(blank,0);
 #endif
-#ifdef VENDOR_EDIT
-    //Wujialong 20160118 enable sched_boost when wakeup and disable sched_boost when screen on
-    if(blank==FB_BLANK_UNBLANK)
-    {
-       sched_set_boost(0);
-    }
-#endif
  	return ret;
 }
 

@@ -969,10 +969,6 @@ static void msm_tlmm_gp_irq_resume(void)
 	      dev_info(ic->dev, "hwirq %s %d[%d] triggered\n",
 	      irq_to_desc(gpio_to_irq((unsigned int)(i+878)))->action->name,
 	      (gpio_to_irq((unsigned int)(i+878))), (unsigned int)i);
-		  if((gpio_to_irq((unsigned int)(i+878))) == 604)//spi12.0
-		  {
-			  sched_set_boost(1);//wujialong 20160119,enable sched_boost when fingerprint wakeup
-		  }
 	   }
     }
 #endif /* VENDOR_EDIT */

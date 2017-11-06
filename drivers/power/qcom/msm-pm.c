@@ -432,7 +432,6 @@ bool msm_cpu_pm_enter_sleep(enum msm_pm_sleep_mode mode, bool from_idle)
 		{
 			pr_info("CPU%u:%s mode:%d during %s\n", cpu, __func__,
 					mode, from_idle ? "idle" : "suspend");
-			sched_set_boost(0);//Wujialong 20160126 disable sched_boost when going to sleep
 		}
 	if (execute[mode])
 		exit_stat = execute[mode](from_idle);
