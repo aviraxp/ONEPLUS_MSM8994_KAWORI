@@ -949,6 +949,35 @@ enum need_lock_type {
 	LOCK_RETRY,
 };
 
+enum cp_reason_type {
+	CP_NO_NEEDED,
+	CP_NON_REGULAR,
+	CP_HARDLINK,
+	CP_SB_NEED_CP,
+	CP_WRONG_PINO,
+	CP_NO_SPC_ROLL,
+	CP_NODE_NEED_CP,
+	CP_FASTBOOT_MODE,
+	CP_SPEC_LOG_NUM,
+};
+
+enum iostat_type {
+	APP_DIRECT_IO,			/* app direct IOs */
+	APP_BUFFERED_IO,		/* app buffered IOs */
+	APP_WRITE_IO,			/* app write IOs */
+	APP_MAPPED_IO,			/* app mapped IOs */
+	FS_DATA_IO,			/* data IOs from kworker/fsync/reclaimer */
+	FS_NODE_IO,			/* node IOs from kworker/fsync/reclaimer */
+	FS_META_IO,			/* meta IOs from kworker/reclaimer */
+	FS_GC_DATA_IO,			/* data IOs from forground gc */
+	FS_GC_NODE_IO,			/* node IOs from forground gc */
+	FS_CP_DATA_IO,			/* data IOs from checkpoint */
+	FS_CP_NODE_IO,			/* node IOs from checkpoint */
+	FS_CP_META_IO,			/* meta IOs from checkpoint */
+	FS_DISCARD,			/* discard */
+	NR_IO_TYPE,
+};
+
 struct f2fs_io_info {
 	struct f2fs_sb_info *sbi;	/* f2fs_sb_info pointer */
 	nid_t ino;		/* inode number */
