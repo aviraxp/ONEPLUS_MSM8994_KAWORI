@@ -1492,6 +1492,7 @@
 		qcom,bam-consumer-pipe-index = <12>;
 		qcom,bam-producer-pipe-index = <13>;
 		qcom,master-id = <86>;
+		qcom,rt-priority;
 		qcom,use-pinctrl;
 		pinctrl-names = "spi_default", "spi_sleep";
 		pinctrl-0 = <&spi_0_active &spi_0_cs1_active>;
@@ -1554,7 +1555,7 @@
 		pinctrl-names = "spi_default", "spi_sleep";
 		pinctrl-0 = <&spi_12_active &spi_12_cs0_active>;
 		pinctrl-1 = <&spi_12_sleep &spi_12_cs0_sleep>;
-		
+		qcom,rt-priority;
 		qcom,shared;
 		
 		/*lichanghua add for use pinctrl end*/
