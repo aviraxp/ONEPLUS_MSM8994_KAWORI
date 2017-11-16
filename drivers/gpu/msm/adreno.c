@@ -957,9 +957,9 @@ static int adreno_remove(struct platform_device *pdev)
 	if (test_bit(ADRENO_DEVICE_CMDBATCH_PROFILE, &adreno_dev->priv))
 		kgsl_free_global(&adreno_dev->cmdbatch_profile_buffer);
 
-#ifdef CONFIG_INPUT
-	input_unregister_handler(&adreno_input_handler);
-#endif
+//#ifdef CONFIG_INPUT
+	//input_unregister_handler(&adreno_input_handler);
+//#endif
 	adreno_uninit_sysfs(device);
 
 	adreno_coresight_remove(adreno_dev);
