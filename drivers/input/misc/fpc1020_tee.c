@@ -304,6 +304,7 @@ static DEVICE_ATTR(irq, S_IRUSR | S_IWUSR, irq_get, irq_ack);
 #ifdef VENDOR_EDIT //WayneChang, 2015/12/02, add for key to abs, simulate key in abs through virtual key system
 extern bool virtual_key_enable;
 #endif
+extern bool s3320_touch_active(void);
 
 static void set_fpc_irq(struct fpc1020_data *fpc1020, bool enable)
 {
@@ -331,7 +332,7 @@ static ssize_t report_home_set(struct device *dev,
 	if (!strncmp(buf, "down", strlen("down")))
 	{
 #ifdef VENDOR_EDIT //WayneChang, 2015/12/02, add for key to abs, simulate key in abs through virtual key system
-		if(!virtual_key_enable){
+		if(!virtual_key_enable && !s3320_touch_active()){
 	 		input_report_key(fpc1020->input_dev,
 							KEY_HOME, 1);
 			input_sync(fpc1020->input_dev);

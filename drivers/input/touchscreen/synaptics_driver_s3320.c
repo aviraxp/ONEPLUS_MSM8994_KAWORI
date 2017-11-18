@@ -448,6 +448,8 @@ struct synaptics_ts_data {
 	char manu_name[12];
 
 	struct work_struct pm_work;
+
+	bool touch_active;
 };
 
 static struct device_attribute attrs_oem[] = {
@@ -1084,6 +1086,13 @@ static int gesture_enabled(int gesture)
 	return (enabled_gestures & (1 << (gesture - 1))) > 0 ? 1 : 0;
 }
 
+bool s3320_touch_active(void)
+{
+	struct synaptics_ts_data *ts = ts_g;
+
+	return ts ? ts->touch_active : false;
+}
+
 static void gesture_judge(struct synaptics_ts_data *ts)
 {
 	unsigned int keyCode = KEY_F4;
@@ -1160,7 +1169,7 @@ static void gesture_judge(struct synaptics_ts_data *ts)
 }
 #endif
 /***************end****************/
-void int_touch(void)
+uint8_t int_touch(void)
 {
         struct synaptics_ts_data *ts;
 	int ret = -1,i = 0;
@@ -1171,7 +1180,7 @@ void int_touch(void)
 	uint32_t finger_info = 0;
 
         if (ts_g == NULL)
-            return;
+            return finger_num;
         ts = ts_g;
 	memset(buf, 0, sizeof(buf));
 	points.x = 0;
@@ -1182,7 +1191,7 @@ void int_touch(void)
 	ret = synaptics_rmi4_i2c_read_block(ts->client, F12_2D_DATA_BASE, 80, buf);
 	if (ret < 0) {
 		TPD_ERR("synaptics_int_touch: i2c_transfer failed\n");
-		return;
+		return finger_num;
 	}
 	for( i = 0; i < ts->max_num; i++ ) {
 		points.status = buf[i*8];
@@ -1244,6 +1253,8 @@ void int_touch(void)
 		gesture_judge(ts);
 	}
 #endif
+
+	return finger_num;
 }
 EXPORT_SYMBOL(int_touch);
 static void synaptics_ts_work_func(struct work_struct *work)
@@ -1271,7 +1282,8 @@ static void synaptics_ts_work_func(struct work_struct *work)
 		goto END;
 	}
 	if( inte & 0x04 ) {
-		int_touch();
+		uint8_t finger_num = int_touch();
+		ts->touch_active = finger_num;
 	}
 END:
     ret = set_changer_bit(ts);
@@ -2974,6 +2986,7 @@ static void synaptics_suspend_resume(struct work_struct *work)
 	} else {
 		synaptics_ts_suspend(&ts->client->dev);
 		ts->is_suspended = 1;
+		ts->touch_active = false;
 	}
 }
 
