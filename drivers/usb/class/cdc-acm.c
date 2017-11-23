@@ -1027,7 +1027,7 @@ static int acm_probe(struct usb_interface *intf,
 		}
 	}
 
-	while (buflen > 0) {
+	while (buflen >= 3) { /* minimum length making sense */
 		if (buffer[1] != USB_DT_CS_INTERFACE) {
 			dev_err(&intf->dev, "skipping garbage\n");
 			goto next_desc;
