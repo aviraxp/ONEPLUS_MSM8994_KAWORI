@@ -2979,6 +2979,7 @@ static void synaptics_suspend_resume(struct work_struct *work)
 	struct synaptics_ts_data *ts =
 		container_of(work, typeof(*ts), pm_work);
 
+	mutex_lock(&ts->mutex);
 	if (ts->is_suspended) {
 		synaptics_ts_resume(&ts->client->dev);
 		ts->is_suspended = 0;
@@ -2988,6 +2989,7 @@ static void synaptics_suspend_resume(struct work_struct *work)
 		ts->is_suspended = 1;
 		ts->touch_active = false;
 	}
+	mutex_unlock(&ts->mutex);
 }
 
 #ifdef SUPPORT_VIRTUAL_KEY
