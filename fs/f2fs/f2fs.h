@@ -2357,6 +2357,21 @@ static inline void *kvzalloc(size_t size, gfp_t flags)
 	return ret;
 }
 
+enum rw_hint {
+	WRITE_LIFE_NOT_SET	= 0,
+	WRITE_LIFE_NONE		= 1, /* RWH_WRITE_LIFE_NONE */
+	WRITE_LIFE_SHORT	= 2, /* RWH_WRITE_LIFE_SHORT */
+	WRITE_LIFE_MEDIUM	= 3, /* RWH_WRITE_LIFE_MEDIUM */
+	WRITE_LIFE_LONG		= 4, /* RWH_WRITE_LIFE_LONG */
+	WRITE_LIFE_EXTREME	= 5, /* RWH_WRITE_LIFE_EXTREME */
+};
+
+static inline void *f2fs_kzalloc(struct f2fs_sb_info *sbi,
+					size_t size, gfp_t flags)
+{
+	return f2fs_kmalloc(sbi, size, flags | __GFP_ZERO);
+}
+
 static inline void f2fs_kvfree(void *ptr)
 {
 	if (is_vmalloc_addr(ptr))
