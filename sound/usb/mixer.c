@@ -1336,9 +1336,8 @@ static int parse_audio_feature_unit(struct mixer_build *state, int unitid, void 
 
 	if (state->mixer->protocol == UAC_VERSION_1) {
 		if (hdr->bLength < 7) {
-			usb_audio_err(state->chip,
-				      "unit %u: invalid UAC_FEATURE_UNIT descriptor\n",
-				      unitid);
+			snd_printk(KERN_ERR "unit %u: invalid UAC_FEATURE_UNIT descriptor\n",
+					unitid);
 			return -EINVAL;
 		}
 		csize = hdr->bControlSize;
@@ -1358,9 +1357,8 @@ static int parse_audio_feature_unit(struct mixer_build *state, int unitid, void 
 	} else {
 		struct uac2_feature_unit_descriptor *ftr = _ftr;
 		if (hdr->bLength < 6) {
-			usb_audio_err(state->chip,
-				      "unit %u: invalid UAC_FEATURE_UNIT descriptor\n",
-				      unitid);
+			snd_printk(KERN_ERR "unit %u: invalid UAC_FEATURE_UNIT descriptor\n",
+					unitid);
 			return -EINVAL;
 		}
 		csize = 4;
