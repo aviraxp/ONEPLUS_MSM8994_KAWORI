@@ -3411,7 +3411,6 @@ static int synaptics_ts_resume(struct device *dev)
 #endif
 	input_sync(ts->input_dev);
 
-	mutex_lock(&ts->mutex);
 #ifndef TPD_USE_EINT
 	hrtimer_start(&ts->timer, ktime_set(1, 0), HRTIMER_MODE_REL);
 #else
@@ -3431,7 +3430,6 @@ static int synaptics_ts_resume(struct device *dev)
     //queue_delayed_work(synaptics_wq,&ts->speed_up_work, msecs_to_jiffies(500));
 	TPD_ERR("%s:normal end!\n", __func__);
 ERR_RESUME:
-	mutex_unlock(&ts->mutex);
 	return 0;
 }
 
