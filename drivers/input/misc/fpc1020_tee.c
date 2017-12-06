@@ -55,6 +55,11 @@
 
 #include <linux/project_info.h>
 
+#include <linux/moduleparam.h>
+
+bool haptic_feedback_disable_fpr = false;
+module_param(haptic_feedback_disable_fpr, bool, 0644);
+
 #define FPC1020_RESET_LOW_US 1000
 #define FPC1020_RESET_HIGH1_US 100
 #define FPC1020_RESET_HIGH2_US 1250
@@ -94,6 +99,9 @@ static const struct vreg_config const vreg_conf[] = {
 	{ "vdd_io", 1800000UL, 1800000UL, 6000, },
 };
 #endif
+
+void qpnp_hap_ignore_next_request(void);
+
 struct fpc1020_data {
 	struct device *dev;
 	struct spi_device *spi;
@@ -1010,6 +1018,9 @@ static irqreturn_t fpc1020_irq_handler(int irq, void *handle)
 	input_sync(fpc1020->input_dev);
 	input_report_key(fpc1020->input_dev, KEY_FINGERPRINT, 0);
 	input_sync(fpc1020->input_dev);
+
+	if (!fpc1020->screen_state && haptic_feedback_disable_fpr)
+		qpnp_hap_ignore_next_request();
 
 	return IRQ_HANDLED;
 }
