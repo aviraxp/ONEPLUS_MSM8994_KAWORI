@@ -479,6 +479,7 @@ static inline int write_all_xattrs(struct inode *inode, __u32 hsize,
 	if (F2FS_I(inode)->i_xattr_nid) {
 		xpage = get_node_page(sbi, F2FS_I(inode)->i_xattr_nid);
 		if (IS_ERR(xpage)) {
+			err = PTR_ERR(xpage);
 			alloc_nid_failed(sbi, new_nid);
 			return PTR_ERR(xpage);
 		}
@@ -489,6 +490,7 @@ static inline int write_all_xattrs(struct inode *inode, __u32 hsize,
 		set_new_dnode(&dn, inode, NULL, NULL, new_nid);
 		xpage = new_node_page(&dn, XATTR_NODE_OFFSET);
 		if (IS_ERR(xpage)) {
+			err = PTR_ERR(xpage);
 			alloc_nid_failed(sbi, new_nid);
 			return PTR_ERR(xpage);
 		}
