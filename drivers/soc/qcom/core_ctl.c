@@ -1129,7 +1129,7 @@ static int group_init(struct cpumask *mask)
 	f->need_cpus  = f->num_cpus;
 	f->avail_cpus  = f->num_cpus;
 	f->offline_delay_ms = 100;
-	f->online_delay_ms = 500;
+	f->online_delay_ms = 0;
 	f->task_thres = UINT_MAX;
 	f->nrrun = f->num_cpus;
 	INIT_LIST_HEAD(&f->lru);
