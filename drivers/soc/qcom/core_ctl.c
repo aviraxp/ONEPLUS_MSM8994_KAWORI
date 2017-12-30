@@ -107,6 +107,10 @@ static ssize_t store_min_cpus(struct cpu_data *state,
 	if (kstrtouint(buf, 0, &val))
 		return -EINVAL;
 
+	if (!strncmp(current->comm, "system_server", 13) ||
+			!strncmp(current->comm, "PowerManager", 12))
+		return -EINVAL;
+
 	state->min_cpus = min(val, state->max_cpus);
 	wake_up_hotplug_thread(state);
 
@@ -124,6 +128,10 @@ static ssize_t store_max_cpus(struct cpu_data *state,
 	unsigned int val;
 
 	if (kstrtouint(buf, 0, &val))
+		return -EINVAL;
+
+	if (!strncmp(current->comm, "system_server", 13) ||
+			!strncmp(current->comm, "PowerManager", 12))
 		return -EINVAL;
 
 	val = min(val, state->num_cpus);
