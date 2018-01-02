@@ -926,14 +926,14 @@ int adreno_probe(struct platform_device *pdev)
 
 	adreno_input_handler.private = device;
 
-//#ifdef CONFIG_INPUT
+#ifdef CONFIG_INPUT
 	/*
 	 * It isn't fatal if we cannot register the input handler.  Sad,
 	 * perhaps, but not fatal
 	 */
-	//if (input_register_handler(&adreno_input_handler))
-		//KGSL_DRV_ERR(device, "Unable to register the input handler\n");
-//#endif
+	if (input_register_handler(&adreno_input_handler))
+		KGSL_DRV_ERR(device, "Unable to register the input handler\n");
+#endif
 out:
 	if (status) {
 		adreno_ringbuffer_close(adreno_dev);
@@ -957,9 +957,9 @@ static int adreno_remove(struct platform_device *pdev)
 	if (test_bit(ADRENO_DEVICE_CMDBATCH_PROFILE, &adreno_dev->priv))
 		kgsl_free_global(&adreno_dev->cmdbatch_profile_buffer);
 
-//#ifdef CONFIG_INPUT
-	//input_unregister_handler(&adreno_input_handler);
-//#endif
+#ifdef CONFIG_INPUT
+	input_unregister_handler(&adreno_input_handler);
+#endif
 	adreno_uninit_sysfs(device);
 
 	adreno_coresight_remove(adreno_dev);
