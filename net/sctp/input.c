@@ -410,13 +410,18 @@ void sctp_icmp_frag_needed(struct sock *sk, struct sctp_association *asoc,
 		return;
 	}
 
-	if (t->param_flags & SPP_PMTUD_ENABLE) {
-		/* Update transports view of the MTU */
-		sctp_transport_update_pmtu(sk, t, pmtu);
+	if (!(t->param_flags & SPP_PMTUD_ENABLE))
+		/* We can't allow retransmitting in such case, as the
+		 * retransmission would be sized just as before, and thus we
+		 * would get another icmp, and retransmit again.
+		 */
+		return;
 
-		/* Update association pmtu. */
-		sctp_assoc_sync_pmtu(sk, asoc);
-	}
+	/* Update transports view of the MTU */
+	sctp_transport_update_pmtu(sk, t, pmtu);
+
+	/* Update association pmtu. */
+	sctp_assoc_sync_pmtu(sk, asoc);
 
 	/* Retransmit with the new pmtu setting.
 	 * Normally, if PMTU discovery is disabled, an ICMP Fragmentation
