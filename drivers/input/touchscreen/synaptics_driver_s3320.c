@@ -262,7 +262,6 @@ static int F54_ANALOG_DATA_BASE;//0x00
 static int synaptics_i2c_suspend(struct device *dev);
 static int synaptics_i2c_resume(struct device *dev);
 /**************I2C resume && suspend end*********/
-static void speedup_synaptics_resume(struct work_struct *work);
 static int synaptics_ts_resume(struct device *dev);
 static int synaptics_ts_suspend(struct device *dev);
 static int synaptics_ts_remove(struct i2c_client *client);
@@ -409,7 +408,6 @@ struct synaptics_ts_data {
 	uint32_t pre_btn_state;
 	struct work_struct  work;
 	struct work_struct  report_work;
-	struct delayed_work speed_up_work;
 	struct input_dev *input_dev;
 	struct hrtimer timer;
 #ifdef SUPPORT_VIRTUAL_KEY
@@ -3135,7 +3133,7 @@ static int synaptics_ts_probe(struct i2c_client *client, const struct i2c_device
 		ret = -ENOMEM;
 		goto exit_createworkqueue_failed;
 	}
-	INIT_DELAYED_WORK(&ts->speed_up_work,speedup_synaptics_resume);
+	INIT_WORK(ts->pm_work, synaptics_ts_work_func);
 
 	synaptics_report = alloc_ordered_workqueue("synaptics_report", WQ_HIGHPRI);
 	if( !synaptics_report ){
@@ -3364,17 +3362,6 @@ static int synaptics_ts_suspend(struct device *dev)
 	return 0;
 }
 
-static void speedup_synaptics_resume(struct work_struct *work)
-{
-    touch_enable(ts_g);
-#ifdef SUPPORT_GLOVES_MODE
-	ret = synaptics_glove_mode_enable(ts_g);
-	if(ret){
-		TPD_ERR("%s: set gloves mode err!!\n", __func__);
-	}
-#endif
-}
-
 static int synaptics_ts_resume(struct device *dev)
 {
 	int ret;
@@ -3427,7 +3414,7 @@ static int synaptics_ts_resume(struct device *dev)
     msleep(5);
     gpio_set_value(ts->reset_gpio,1);
 #endif
-    //queue_delayed_work(synaptics_wq,&ts->speed_up_work, msecs_to_jiffies(500));
+	touch_enable(ts);
 	TPD_ERR("%s:normal end!\n", __func__);
 ERR_RESUME:
 	return 0;
@@ -3481,7 +3468,7 @@ static int fb_notifier_callback(struct notifier_block *self, unsigned long event
 		case FB_BLANK_UNBLANK:
 		case FB_BLANK_VSYNC_SUSPEND:
 			if (ts->is_suspended)
-				queue_work(system_highpri_wq, &ts->pm_work);
+				queue_work(synaptics_wq, &ts->pm_work);
 			break;
 		case FB_BLANK_POWERDOWN:
 			atomic_set(&ts->is_stop, 1);
@@ -3489,12 +3476,9 @@ static int fb_notifier_callback(struct notifier_block *self, unsigned long event
 		}
 	} else if (event == FB_EVENT_BLANK) {
 		switch (*blank) {
-		case FB_BLANK_UNBLANK:
-			queue_delayed_work(synaptics_wq, &ts->speed_up_work, msecs_to_jiffies(5));
-			break;
 		case FB_BLANK_POWERDOWN:
 			if (!ts->is_suspended)
-				queue_work(system_highpri_wq, &ts->pm_work);
+				queue_work(synaptics_wq, &ts->pm_work);
 			break;
 		}
 	}
