@@ -3128,13 +3128,6 @@ static int synaptics_ts_probe(struct i2c_client *client, const struct i2c_device
 
 	push_component_info(TP, ts->fw_id, ts->manu_name);
 
-	synaptics_wq = alloc_ordered_workqueue("synaptics_wq", WQ_HIGHPRI);
-	if( !synaptics_wq ){
-		ret = -ENOMEM;
-		goto exit_createworkqueue_failed;
-	}
-	INIT_WORK(ts->pm_work, synaptics_ts_work_func);
-
 	synaptics_report = alloc_ordered_workqueue("synaptics_report", WQ_HIGHPRI);
 	if( !synaptics_report ){
 		ret = -ENOMEM;
@@ -3169,6 +3162,11 @@ static int synaptics_ts_probe(struct i2c_client *client, const struct i2c_device
 		TPD_ERR("synaptics_input_init failed!\n");
 	}
 
+	synaptics_wq = alloc_ordered_workqueue("synaptics_wq", WQ_HIGHPRI);
+	if( !synaptics_wq ){
+		ret = -ENOMEM;
+		goto exit_createworkqueue_failed;
+	}
 	INIT_WORK(&ts->pm_work, synaptics_suspend_resume);
 
 #if defined(CONFIG_FB)
