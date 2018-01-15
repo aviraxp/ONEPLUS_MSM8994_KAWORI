@@ -3467,6 +3467,8 @@ static int fb_notifier_callback(struct notifier_block *self, unsigned long event
 		switch (*blank) {
 		case FB_BLANK_UNBLANK:
 		case FB_BLANK_VSYNC_SUSPEND:
+		case FB_BLANK_HSYNC_SUSPEND:
+		case FB_BLANK_NORMAL:
 			if (ts->is_suspended)
 				queue_work(synaptics_wq, &ts->pm_work);
 			break;
