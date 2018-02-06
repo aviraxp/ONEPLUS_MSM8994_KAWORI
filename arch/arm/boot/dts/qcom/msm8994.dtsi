@@ -1089,10 +1089,8 @@
 		reg = <0xf9017000 0x1000>;
 		reg-names = "wdt-base";
 		interrupts = <0 3 0>, <0 4 0>;
-//liyunbing@BSP, 2015/05/21, WDT bark-time too short cause some task timeout  
-                #qcom,bark-time = <11000>;
-                qcom,bark-time = <15000>;
-		qcom,pet-time = <10000>;
+		qcom,bark-time = <20000>;
+		qcom,pet-time = <15000>;
 		qcom,ipi-ping;
 	};
 
