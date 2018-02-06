@@ -192,15 +192,11 @@ static inline void __submit_bio(struct f2fs_sb_info *sbi,
 	if (!is_read_io(bio_op(bio))) {
 		unsigned int start;
 
-		if (f2fs_sb_mounted_blkzoned(sbi->sb) &&
-			current->plug && (type == DATA || type == NODE))
-			blk_finish_plug(current->plug);
-
 		if (type != DATA && type != NODE)
 			goto submit_io;
 
-		start = bio->bi_size >> F2FS_BLKSIZE_BITS;
-		start %= F2FS_IO_SIZE(sbi);
+		if (f2fs_sb_mounted_blkzoned(sbi->sb) && current->plug)
+			blk_finish_plug(current->plug);
 
 		if (start == 0)
 			goto submit_io;
