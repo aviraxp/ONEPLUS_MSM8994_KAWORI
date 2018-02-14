@@ -21491,19 +21491,18 @@ static int wma_wow_wakeup_host_event(void *handle, u_int8_t *event,
 
 	wake_info = param_buf->fixed_param;
 
-	if ((wake_info->wake_reason != WOW_REASON_UNSPECIFIED) ||
-	    (wake_info->wake_reason == WOW_REASON_UNSPECIFIED &&
-	     !wmi_get_runtime_pm_inprogress(wma->wmi_handle))) {
+	if (!wmi_get_runtime_pm_inprogress(wma->wmi_handle)) {
 		if (wake_info->vdev_id >= wma->max_bssid) {
 			WMA_LOGE("%s: received invalid vdev_id %d",
 				__func__, wake_info->vdev_id);
 			return -EINVAL;
 		}
-		WMA_LOGA("WOW wakeup host event received (reason: %s(%d)) for vdev %d",
+
+		WMA_LOGA("WOW (%d) %s vdev:%d",
+			wake_info->wake_reason,
 			wma_wow_wake_reason_str(wake_info->wake_reason, wma),
 			wake_info->wake_reason,
 			wake_info->vdev_id);
-		vos_wow_wakeup_host_event(wake_info->wake_reason);
 	}
 
 	vos_event_set(&wma->wma_resume_event);
@@ -21555,6 +21554,12 @@ static int wma_wow_wakeup_host_event(void *handle, u_int8_t *event,
 #ifdef FEATURE_WLAN_SCAN_PNO
 	case WOW_REASON_NLOD:
 		wma_wow_wake_up_stats(wma, NULL, 0, WOW_REASON_NLOD);
+		if (wake_info->vdev_id >= wma->max_bssid) {
+			WMA_LOGE("%s: received invalid vdev_id %d",
+				__func__, wake_info->vdev_id);
+			return -EINVAL;
+		}
+
 		node = &wma->interfaces[wake_info->vdev_id];
 		if (node) {
 			WMA_LOGD("NLO match happened");
