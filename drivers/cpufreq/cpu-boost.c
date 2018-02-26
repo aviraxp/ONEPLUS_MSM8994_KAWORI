@@ -22,6 +22,7 @@
 #include <linux/slab.h>
 #include <linux/input.h>
 #include <linux/time.h>
+#include <linux/display_state.h>
 
 struct cpu_sync {
 	int cpu;
@@ -231,6 +232,9 @@ static void cpuboost_input_event(struct input_handle *handle,
 		unsigned int type, unsigned int code, int value)
 {
 	u64 now;
+
+	if (!is_display_on())
+		return;
 
 	if (!input_boost_enabled)
 		return;
