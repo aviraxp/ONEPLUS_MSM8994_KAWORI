@@ -37,11 +37,6 @@
 #include <linux/of_batterydata.h>
 #include <linux/msm_bcl.h>
 #include <linux/ktime.h>
-#if defined(CONFIG_FB)
-/* yangfangbiao@oneplus.cn,20150519  Add for reset charge current when screen is off */
-#include <linux/notifier.h>
-#include <linux/fb.h>
-#endif/*CONFIG_FB*/
 
 #ifdef VENDOR_EDIT
 #include <linux/proc_fs.h>
@@ -383,10 +378,6 @@ bool is_power_changed;
 unsigned int aicl_current;
 bool time_out;
 #endif
-#if defined(CONFIG_FB)
-	/* yangfangbiao@oneplus.cn,20150519  Add for reset charge current when screen is off */
-	struct notifier_block fb_notif;
-#endif /*CONFIG_FB*/
 
 #ifdef VENDOR_EDIT
 	bool ship_mode;
@@ -7715,58 +7706,6 @@ static void qpnp_charge_info_init(struct smbchg_chip *chip)
 	chip->battery_status=BATTERY_STATUS_GOOD;
 }
 
-#if defined(CONFIG_FB)
-/* yangfangbiao@oneplus.cn,20150519  Add for reset charge current when screen is off */
-static int fb_notifier_callback(struct notifier_block *self,
-				 unsigned long event, void *data)
-{
-	struct fb_event *evdata = data;
-	int *blank;
-	struct smbchg_chip *chip =
-		container_of(self, struct smbchg_chip, fb_notif);
-	//union power_supply_propval ret = {0,};
-	pr_debug(" %s enter\n",__func__);
-
-	 if (evdata && evdata->data && chip) {
-		if (event == FB_EVENT_BLANK) {
-				 blank = evdata->data;
-	     if (*blank == FB_BLANK_UNBLANK) {
-		 chip->oem_lcd_is_on =true ;
-					/* yangfangbiao@oneplus.cn,20150519  Add for auto adapt current by software. */
-					pr_debug(" %s FB_BLANK_UNBLANK\n",__func__);
-					if(chip->aicl_current != 0) {
-						if (chip->aicl_current >= chip->lcd_on_iusb) {
-							/* yangfangbiao@oneplus.cn,20150710  Add for usb thermal current limit */
-							smbchg_set_usb_current_max(chip, calc_thermal_limited_current(chip, chip->lcd_on_iusb));
-							smbchg_rerun_aicl(chip);
-
-						} else {
-							/* yangfangbiao@oneplus.cn,20150710  Add for usb thermal current limit */
-							smbchg_set_usb_current_max(chip, calc_thermal_limited_current(chip, chip->aicl_current));
-							smbchg_rerun_aicl(chip);
-						}
-						}
-					}
-
-	else if (*blank == FB_BLANK_POWERDOWN) {
-					/* yangfangbiao@oneplus.cn,20150519  Add for auto adapt current by software. */
-					chip->oem_lcd_is_on =false;
-					pr_debug(" %s FB_BLANK_POWERDOWN\n",__func__);
-					if(chip->aicl_current != 0) {
-						/* yangfangbiao@oneplus.cn,20150710  Add for usb thermal current limit */
-						smbchg_set_usb_current_max(chip, calc_thermal_limited_current(chip, chip->aicl_current));
-						smbchg_rerun_aicl(chip);
-					}
-
-				}
-			 }
-
-	 }
-
-	 return 0;
-}
-#endif /*CONFIG_FB*/
-
 static void update_heartbeat(struct work_struct *work)
 {
 
@@ -8266,15 +8205,6 @@ static int smbchg_probe(struct spmi_device *spmi)
 						__func__, rc);
 		}
 #endif
-#if defined(CONFIG_FB)
-		/* yangfangbiao@oneplus.cn,20150519  Add for reset charge current when screen is off */
-		chip->fb_notif.notifier_call = fb_notifier_callback;
-
-		rc = fb_register_client(&chip->fb_notif);
-
-		if (rc)
-			pr_err("Unable to register fb_notifier: %d\n", rc);
-#endif /*CONFIG_FB*/
 
 	create_debugfs_entries(chip);
 
@@ -8316,11 +8246,6 @@ static int smbchg_remove(struct spmi_device *spmi)
 	device_remove_file(chip->dev, &dev_attr_test_temp);
 	device_remove_file(chip->dev, &dev_attr_test_authentic);
 #endif
-#if defined(CONFIG_FB)
-		/* yangfangbiao@oneplus.cn,20150519  Add for reset charge current when screen is off */
-		if (fb_unregister_client(&chip->fb_notif))
-			pr_err("Error occurred while unregistering fb_notifier.\n");
-#endif /*CONFIG_FB*/
 
 	if (chip->dc_psy_type != -EINVAL)
 		power_supply_unregister(&chip->dc_psy);
