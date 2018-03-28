@@ -111,9 +111,17 @@ struct f2fs_mount_info {
 	unsigned int	opt;
 };
 
-#define F2FS_FEATURE_ENCRYPT	0x0001
-#define F2FS_FEATURE_BLKZONED	0x0002
-#define F2FS_FEATURE_ATOMIC_WRITE 0x0004
+#define F2FS_FEATURE_ENCRYPT		0x0001
+#define F2FS_FEATURE_BLKZONED		0x0002
+#define F2FS_FEATURE_ATOMIC_WRITE	0x0004
+#define F2FS_FEATURE_EXTRA_ATTR		0x0008
+#define F2FS_FEATURE_PRJQUOTA		0x0010
+#define F2FS_FEATURE_INODE_CHKSUM	0x0020
+#define F2FS_FEATURE_FLEXIBLE_INLINE_XATTR	0x0040
+#define F2FS_FEATURE_QUOTA_INO		0x0080
+#define F2FS_FEATURE_INODE_CRTIME	0x0100
+#define F2FS_FEATURE_LOST_FOUND		0x0200
+#define F2FS_FEATURE_VERITY		0x0400	/* reserved */
 
 #define F2FS_HAS_FEATURE(sb, mask)					\
 	((F2FS_SB(sb)->raw_super->feature & cpu_to_le32(mask)) != 0)
@@ -607,6 +615,7 @@ enum {
 #define FADVISE_ENC_NAME_BIT	0x08
 #define FADVISE_KEEP_SIZE_BIT	0x10
 #define FADVISE_HOT_BIT		0x20
+#define FADVISE_VERITY_BIT	0x40	/* reserved */
 
 #define file_is_cold(inode)	is_file(inode, FADVISE_COLD_BIT)
 #define file_wrong_pino(inode)	is_file(inode, FADVISE_LOST_PINO_BIT)
