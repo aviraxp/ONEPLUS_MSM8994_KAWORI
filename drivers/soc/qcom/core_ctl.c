@@ -53,7 +53,6 @@ struct cpu_data {
 	bool	rejected;
 	bool	is_busy;
 	bool    not_preferred;
-	bool	available;
 	unsigned int busy;
 	unsigned int cpu;
 	struct list_head sib;
@@ -64,7 +63,6 @@ struct cpu_data {
 	unsigned int min_cpus;
 	unsigned int max_cpus;
 	unsigned int offline_delay_ms;
-	unsigned int online_delay_ms;
 	unsigned int busy_up_thres[MAX_CPUS_PER_GROUP];
 	unsigned int busy_down_thres[MAX_CPUS_PER_GROUP];
 	unsigned int online_cpus;
@@ -156,53 +154,15 @@ static ssize_t show_max_cpus(struct cpu_data *state, char *buf)
 }
 
 static ssize_t store_offline_delay_ms(struct cpu_data *state,
-				const char *buf, size_t count)
+					const char *buf, size_t count)
 {
-	struct cpu_data *c;
-	unsigned int i, first_cpu;
-	unsigned int val[MAX_CPUS_PER_GROUP];
-	int ret;
+	unsigned int val;
 
-	ret = sscanf(buf, "%u %u %u %u", &val[0], &val[1], &val[2], &val[3]);
-	if (ret != 1 && ret != state->num_cpus)
+	if (kstrtouint(buf, 0, &val))
 		return -EINVAL;
 
-	first_cpu = state->first_cpu;
-
-	for (i = 0; i < state->num_cpus; i++) {
-		c = &per_cpu(cpu_state, first_cpu);
-		if (ret == 1) 
-			c->offline_delay_ms = val[0];
-		else
-			c->offline_delay_ms = val[i];
-		first_cpu++;
-	}
-
-	return count;
-}
-
-static ssize_t store_online_delay_ms(struct cpu_data *state,
-				const char *buf, size_t count)
-{
-	struct cpu_data *c;
-	unsigned int i, first_cpu;
-	unsigned int val[MAX_CPUS_PER_GROUP];
-	int ret;
-
-	ret = sscanf(buf, "%u %u %u %u", &val[0], &val[1], &val[2], &val[3]);
-	if (ret != 1 && ret != state->num_cpus)
-		return -EINVAL;
-
-	first_cpu = state->first_cpu;
-
-	for (i = 0; i < state->num_cpus; i++) {
-		c = &per_cpu(cpu_state, first_cpu);
-		if (ret == 1)
-			c->online_delay_ms = val[0];
-		else
-			c->online_delay_ms = val[i];
-		first_cpu++;
-	}
+	state->offline_delay_ms = val;
+	apply_need(state);
 
 	return count;
 }
@@ -231,38 +191,7 @@ static ssize_t store_task_thres(struct cpu_data *state,
 
 static ssize_t show_offline_delay_ms(struct cpu_data *state, char *buf)
 {
-	struct cpu_data *c;
-	ssize_t count = 0;
-	unsigned int i, first_cpu;
-
-	first_cpu = state->first_cpu;
-
-	for (i = 0; i < state->num_cpus; i++) {
-		c = &per_cpu(cpu_state, first_cpu);
-		count += snprintf(buf + count, PAGE_SIZE - count,
-				"\tCPU:%d %u\n", first_cpu, c->offline_delay_ms);
-		first_cpu++;
-	}
-
-	return count;
-}
-
-static ssize_t show_online_delay_ms(struct cpu_data *state, char *buf)
-{
-	struct cpu_data *c;
-	ssize_t count = 0;
-	unsigned int i, first_cpu;
-
-	first_cpu = state->first_cpu;
-
-	for (i = 0; i < state->num_cpus; i++) {
-		c = &per_cpu(cpu_state, first_cpu);
-		count += snprintf(buf + count, PAGE_SIZE - count,
-				"\tCPU:%d %u\n", first_cpu, c->online_delay_ms);
-		first_cpu++;
-	}
-
-	return count;
+	return snprintf(buf, PAGE_SIZE, "%u\n", state->offline_delay_ms);
 }
 
 static ssize_t store_busy_up_thres(struct cpu_data *state,
@@ -536,7 +465,6 @@ __ATTR(_name, 0644, show_##_name, store_##_name)
 core_ctl_attr_rw(min_cpus);
 core_ctl_attr_rw(max_cpus);
 core_ctl_attr_rw(offline_delay_ms);
-core_ctl_attr_rw(online_delay_ms);
 core_ctl_attr_rw(busy_up_thres);
 core_ctl_attr_rw(busy_down_thres);
 core_ctl_attr_rw(task_thres);
@@ -553,7 +481,6 @@ static struct attribute *default_attrs[] = {
 	&min_cpus.attr,
 	&max_cpus.attr,
 	&offline_delay_ms.attr,
-	&online_delay_ms.attr,
 	&busy_up_thres.attr,
 	&busy_down_thres.attr,
 	&task_thres.attr,
@@ -718,8 +645,7 @@ static bool eval_need(struct cpu_data *f)
 	unsigned int need_cpus = 0, last_need, thres_idx;
 	int ret = 0;
 	bool need_flag = false;
-	s64 elapsed;
-        s64 now;
+	s64 now;
 
 	if (unlikely(!f->inited))
 		return 0;
@@ -745,25 +671,18 @@ static bool eval_need(struct cpu_data *f)
 		return 0;
 	}
 
-        elapsed = now - f->need_ts;
-
-	list_for_each_entry(c, &f->lru, sib) {
-		if (need_cpus > last_need) {
-			if (elapsed >= c->online_delay_ms) {
-				ret = 1;
-				c->available = true;
-			} else {
-				c->available = false;
-			}
-		} else if (need_cpus < last_need) {
-			if (elapsed >= c->offline_delay_ms) {
-				ret = 1;
-				c->available = true;
-			} else {
-				c->available = false;
-			}
+	if (need_cpus > last_need) {
+		ret = 1;
+	} else if (need_cpus < last_need) {
+		s64 elapsed = now - f->need_ts;
+		if (elapsed >= f->offline_delay_ms) {
+			ret = 1;
+		} else {
+			mod_timer(&f->timer, jiffies +
+				  msecs_to_jiffies(f->offline_delay_ms));
 		}
 	}
+
 	if (ret) {
 		f->need_ts = now;
 		f->need_cpus = need_cpus;
@@ -908,7 +827,7 @@ static void __ref do_hotplug(struct cpu_data *f)
 			goto done;
 
 		list_for_each_entry_safe(c, tmp, &f->lru, sib) {
-			if (!c->online || c->always_online_cpu || c->available)
+			if (!c->online || c->always_online_cpu)
 				continue;
 
 			if (f->online_cpus <= f->max_cpus)
@@ -920,7 +839,7 @@ static void __ref do_hotplug(struct cpu_data *f)
 		}
 	} else if (f->online_cpus < need) {
 		list_for_each_entry_safe(c, tmp, &f->lru, sib) {
-			if (c->online || c->rejected || c->not_preferred || c->available)
+			if (c->online || c->rejected || c->not_preferred)
 				continue;
 			if (f->online_cpus == need)
 				break;
@@ -1137,7 +1056,6 @@ static int group_init(struct cpumask *mask)
 	f->need_cpus  = f->num_cpus;
 	f->avail_cpus  = f->num_cpus;
 	f->offline_delay_ms = 100;
-	f->online_delay_ms = 0;
 	f->task_thres = UINT_MAX;
 	f->nrrun = f->num_cpus;
 	INIT_LIST_HEAD(&f->lru);
