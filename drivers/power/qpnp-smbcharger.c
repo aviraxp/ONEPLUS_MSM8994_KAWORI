@@ -323,8 +323,6 @@ struct smbchg_chip {
 	unsigned long			first_aicl_seconds;
 	int				aicl_irq_count;
 	struct mutex			usb_status_lock;
-	bool oem_lcd_is_on;
-	int lcd_on_iusb;
 #ifdef VENDOR_EDIT
 /*Modify for V2.4 charge standard */
 chg_cv_battery_temp_region_type mBatteryTempRegion;
@@ -7140,26 +7138,11 @@ static int handle_batt_temp_little_cold(struct smbchg_chip *chip)
 					queue_delayed_work(system_power_efficient_wq,
 						&chip->soft_aicl_work,
 						msecs_to_jiffies(SOFT_AICL_DELAY_MS));
-
-					if((chip->oem_lcd_is_on==true)&&(chip->aicl_current > chip->lcd_on_iusb))
-						{
-						smbchg_set_usb_current_max(chip, chip->lcd_on_iusb);
-				        chip->usb_target_current_ma=chip->lcd_on_iusb;/* yangfangbiao@oneplus.cn,20150710  Add for usb thermal current limit */
-						smbchg_rerun_aicl(chip);
-						}
 				} else {
-						if((chip->oem_lcd_is_on==true)&&(chip->aicl_current > chip->lcd_on_iusb))
-						{
-						smbchg_set_usb_current_max(chip,chip->lcd_on_iusb);
-						chip->usb_target_current_ma=chip->lcd_on_iusb;/* yangfangbiao@oneplus.cn,20150710  Add for usb thermal current limit */
-						}
-						else
-						{
-						smbchg_set_usb_current_max(chip, chip->aicl_current);
-						chip->usb_target_current_ma=chip->aicl_current;/* yangfangbiao@oneplus.cn,20150710  Add for usb thermal current limit */
-						}
-						smbchg_rerun_aicl(chip);
-						}
+					smbchg_set_usb_current_max(chip, chip->aicl_current);
+					chip->usb_target_current_ma=chip->aicl_current;/* yangfangbiao@oneplus.cn,20150710  Add for usb thermal current limit */
+					smbchg_rerun_aicl(chip);
+				}
 			}
 
 		smbchg_float_voltage_set(chip, chip->temp_more_cool_vbatdel);
@@ -7212,26 +7195,12 @@ static int handle_batt_temp_cool(struct smbchg_chip *chip)
 						queue_delayed_work(system_power_efficient_wq,
 							&chip->soft_aicl_work,
 							msecs_to_jiffies(SOFT_AICL_DELAY_MS));
-						if((chip->oem_lcd_is_on==true)&&(chip->aicl_current > chip->lcd_on_iusb))
-								{
-								smbchg_set_usb_current_max(chip, calc_thermal_limited_current(chip, chip->lcd_on_iusb));
-								smbchg_rerun_aicl(chip);
-								chip->usb_target_current_ma=chip->lcd_on_iusb;/* yangfangbiao@oneplus.cn,20150710  Add for usb thermal current limit */
-							}
 					} else {
-							if((chip->oem_lcd_is_on==true)&&(chip->aicl_current > chip->lcd_on_iusb))
-								{
-						        smbchg_set_usb_current_max(chip,calc_thermal_limited_current(chip, chip->lcd_on_iusb));
-								chip->usb_target_current_ma=chip->lcd_on_iusb;/* yangfangbiao@oneplus.cn,20150710	Add for usb thermal current limit */
-								}
-							else
-								{
-								smbchg_set_usb_current_max(chip, calc_thermal_limited_current(chip, chip->aicl_current));
-								chip->usb_target_current_ma=chip->aicl_current;/* yangfangbiao@oneplus.cn,20150710	Add for usb thermal current limit */
-								}
-								smbchg_rerun_aicl(chip);
+						smbchg_set_usb_current_max(chip, calc_thermal_limited_current(chip, chip->aicl_current));
+						chip->usb_target_current_ma=chip->aicl_current;/* yangfangbiao@oneplus.cn,20150710	Add for usb thermal current limit */
+						smbchg_rerun_aicl(chip);
 					}
-					}
+				}
 
 		if(ret.intval / 1000 == 1500){
 
@@ -7292,27 +7261,12 @@ static int handle_batt_temp_little_cool(struct smbchg_chip *chip)
 							queue_delayed_work(system_power_efficient_wq,
 								&chip->soft_aicl_work,
 								msecs_to_jiffies(SOFT_AICL_DELAY_MS));
-							if((chip->oem_lcd_is_on==true)&&(chip->aicl_current > chip->lcd_on_iusb))
-								{
-								smbchg_set_usb_current_max(chip, calc_thermal_limited_current(chip, chip->lcd_on_iusb));
-								smbchg_rerun_aicl(chip);
-								chip->usb_target_current_ma=chip->lcd_on_iusb;/* yangfangbiao@oneplus.cn,20150710  Add for usb thermal current limit */
-							}
 						} else {
-
-								if((chip->oem_lcd_is_on==true)&&(chip->aicl_current > chip->lcd_on_iusb))
-								{
-						        smbchg_set_usb_current_max(chip,calc_thermal_limited_current(chip, chip->lcd_on_iusb));
-								chip->usb_target_current_ma=chip->lcd_on_iusb;/* yangfangbiao@oneplus.cn,20150710	Add for usb thermal current limit */
-								}
-							else
-								{
-								smbchg_set_usb_current_max(chip, calc_thermal_limited_current(chip, chip->aicl_current));
-								chip->usb_target_current_ma=chip->aicl_current;/* yangfangbiao@oneplus.cn,20150710	Add for usb thermal current limit */
-								}
-								smbchg_rerun_aicl(chip);
+							smbchg_set_usb_current_max(chip, calc_thermal_limited_current(chip, chip->aicl_current));
+							chip->usb_target_current_ma=chip->aicl_current;/* yangfangbiao@oneplus.cn,20150710	Add for usb thermal current limit */
+							smbchg_rerun_aicl(chip);
 						}
-						}
+					}
 
 		if(ret.intval / 1000 == 1500) {
 			smbchg_float_voltage_set(chip, chip->temp_littel_cool_vbatdel);
@@ -7377,19 +7331,9 @@ static int handle_batt_temp_pre_normal(struct smbchg_chip *chip)
 				queue_delayed_work(system_power_efficient_wq,
 					&chip->soft_aicl_work,
 					msecs_to_jiffies(SOFT_AICL_DELAY_MS));
-				if((chip->oem_lcd_is_on==true)&&(chip->aicl_current > chip->lcd_on_iusb)) {
-					smbchg_set_usb_current_max(chip, calc_thermal_limited_current(chip, chip->lcd_on_iusb));
-					smbchg_rerun_aicl(chip);
-					chip->usb_target_current_ma=chip->lcd_on_iusb;/* yangfangbiao@oneplus.cn,20150710  Add for usb thermal current limit */
-				}
 			} else {
-				if((chip->oem_lcd_is_on==true)&&(chip->aicl_current > chip->lcd_on_iusb)) {
-			        smbchg_set_usb_current_max(chip,calc_thermal_limited_current(chip, chip->lcd_on_iusb));
-					chip->usb_target_current_ma=chip->lcd_on_iusb;/* yangfangbiao@oneplus.cn,20150710	Add for usb thermal current limit */
-				} else {
-					smbchg_set_usb_current_max(chip, calc_thermal_limited_current(chip, chip->aicl_current));
-					chip->usb_target_current_ma=chip->aicl_current;/* yangfangbiao@oneplus.cn,20150710	Add for usb thermal current limit */
-				}
+				smbchg_set_usb_current_max(chip, calc_thermal_limited_current(chip, chip->aicl_current));
+				chip->usb_target_current_ma=chip->aicl_current;/* yangfangbiao@oneplus.cn,20150710	Add for usb thermal current limit */
 				smbchg_rerun_aicl(chip);
 			}
 		}
@@ -7450,27 +7394,12 @@ static int handle_batt_temp_normal(struct smbchg_chip *chip)
 							queue_delayed_work(system_power_efficient_wq,
 								&chip->soft_aicl_work,
 								msecs_to_jiffies(SOFT_AICL_DELAY_MS));
-							if((chip->oem_lcd_is_on==true)&&(chip->aicl_current > chip->lcd_on_iusb))
-								{
-								smbchg_set_usb_current_max(chip, calc_thermal_limited_current(chip, chip->lcd_on_iusb));
-								smbchg_rerun_aicl(chip);
-								chip->usb_target_current_ma=chip->lcd_on_iusb;/* yangfangbiao@oneplus.cn,20150710  Add for usb thermal current limit */
-							}
 						} else {
-
-						if((chip->oem_lcd_is_on==true)&&(chip->aicl_current > chip->lcd_on_iusb))
-								{
-						        smbchg_set_usb_current_max(chip,calc_thermal_limited_current(chip, chip->lcd_on_iusb));
-								chip->usb_target_current_ma=chip->lcd_on_iusb;/* yangfangbiao@oneplus.cn,20150710	Add for usb thermal current limit */
-								}
-							else
-								{
-								smbchg_set_usb_current_max(chip, calc_thermal_limited_current(chip, chip->aicl_current));
-								chip->usb_target_current_ma=chip->aicl_current;/* yangfangbiao@oneplus.cn,20150710	Add for usb thermal current limit */
-								}
-								smbchg_rerun_aicl(chip);
+							smbchg_set_usb_current_max(chip, calc_thermal_limited_current(chip, chip->aicl_current));
+							chip->usb_target_current_ma=chip->aicl_current;/* yangfangbiao@oneplus.cn,20150710	Add for usb thermal current limit */
+							smbchg_rerun_aicl(chip);
 						}
-						}
+					}
 
 
     if(ret.intval / 1000 == 1500)
@@ -7530,26 +7459,12 @@ static int handle_batt_temp_warm(struct smbchg_chip *chip)
 							queue_delayed_work(system_power_efficient_wq,
 								&chip->soft_aicl_work,
 								msecs_to_jiffies(SOFT_AICL_DELAY_MS));
-							if((chip->oem_lcd_is_on==true)&&(chip->aicl_current > chip->lcd_on_iusb))
-								{
-								smbchg_set_usb_current_max(chip, calc_thermal_limited_current(chip, chip->lcd_on_iusb));
-								smbchg_rerun_aicl(chip);
-								chip->usb_target_current_ma=chip->lcd_on_iusb;/* yangfangbiao@oneplus.cn,20150710  Add for usb thermal current limit */
-							}
 						} else {
-								if((chip->oem_lcd_is_on==true)&&(chip->aicl_current > chip->lcd_on_iusb))
-								{
-						        smbchg_set_usb_current_max(chip,calc_thermal_limited_current(chip, chip->lcd_on_iusb));
-								chip->usb_target_current_ma=chip->lcd_on_iusb;/* yangfangbiao@oneplus.cn,20150710	Add for usb thermal current limit */
-								}
-							else
-								{
-								smbchg_set_usb_current_max(chip, calc_thermal_limited_current(chip, chip->aicl_current));
-								chip->usb_target_current_ma=chip->aicl_current;/* yangfangbiao@oneplus.cn,20150710	Add for usb thermal current limit */
-								}
-								smbchg_rerun_aicl(chip);
+							smbchg_set_usb_current_max(chip, calc_thermal_limited_current(chip, chip->aicl_current));
+							chip->usb_target_current_ma=chip->aicl_current;/* yangfangbiao@oneplus.cn,20150710	Add for usb thermal current limit */
+							smbchg_rerun_aicl(chip);
 						}
-						}
+					}
 
 
 		if(ret.intval / 1000 == 1500){
@@ -7698,10 +7613,7 @@ static void qpnp_charge_info_init(struct smbchg_chip *chip)
 	chip->temp_prenormal_current 	 = 1300;  //   Vterm=4.32V		I=0.4C ,  12 <= T < = 22
 	chip->temp_normal_current 	 = 1910;  //   Vterm=4.3V		I=0.6C ,  22 <= T < = 45
 	chip->temp_warm_current		 =600;  //    Vterm=4.0V		I=0.2c , 45 <= T < 55
-	chip->lcd_on_iusb = 2100;
 	chip->temp_littel_cool_set_current_0_point_25c = false;
-
-	chip->oem_lcd_is_on =false;
 	chip->time_out = false;
 	chip->battery_status=BATTERY_STATUS_GOOD;
 }
