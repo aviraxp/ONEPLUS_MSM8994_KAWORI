@@ -3445,6 +3445,7 @@ static int fd_locked_ioctl(struct block_device *bdev, fmode_t mode, unsigned int
 					  (struct floppy_struct **)&outparam);
 		if (ret)
 			return ret;
+		size = offsetof(struct floppy_struct, name);
 		break;
 	case FDMSGON:
 		UDP->flags |= FTD_MSG;
