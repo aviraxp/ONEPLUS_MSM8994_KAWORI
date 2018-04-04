@@ -16,7 +16,6 @@
 #include <linux/writeback.h>
 #include <linux/dyn_sync_cntrl.h>
 #include <linux/lcd_notify.h>
-#include <linux/syscalls.h>
 
 // fsync_mutex protects dyn_fsync_active during suspend / late resume transitions
 static DEFINE_MUTEX(fsync_mutex);
@@ -86,9 +85,8 @@ static ssize_t dyn_fsync_suspend_show(struct kobject *kobj,
 
 static void dyn_fsync_force_flush(void)
 {
-	/* flush all outstanding buffers */
-	wakeup_flusher_threads(0, WB_REASON_SYNC);
-	emergency_sync();
+	sync_filesystems(0);
+	sync_filesystems(1);
 }
 
 
@@ -96,7 +94,7 @@ static int dyn_fsync_panic_event(struct notifier_block *this,
 		unsigned long event, void *ptr)
 {
 	suspend_active = false;
-	sys_sync();
+	dyn_fsync_force_flush();
 	pr_warn("dynamic fsync: panic - force flush!\n");
 
 	return NOTIFY_DONE;
@@ -109,7 +107,7 @@ static int dyn_fsync_notify_sys(struct notifier_block *this, unsigned long code,
 	if (code == SYS_DOWN || code == SYS_HALT) 
 	{
 		suspend_active = false;
-		sys_sync();
+		dyn_fsync_force_flush();
 		pr_warn("dynamic fsync: reboot - force flush!\n");
 	}
 	return NOTIFY_DONE;
