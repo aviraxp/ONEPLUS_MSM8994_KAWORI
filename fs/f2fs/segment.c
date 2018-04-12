@@ -2653,6 +2653,7 @@ void write_meta_page(struct f2fs_sb_info *sbi, struct page *page)
 		fio.op_flags &= ~REQ_META;
 
 	set_page_writeback(page);
+	ClearPageError(page);
 	f2fs_submit_page_write(&fio);
 }
 
