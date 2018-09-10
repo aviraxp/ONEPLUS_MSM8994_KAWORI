@@ -3012,7 +3012,7 @@ static int i2c_msm_init(void)
 	register_pm_notifier(&pm_notifier_callback_nb);
 	return platform_driver_register(&i2c_msm_driver);
 }
-arch_initcall(i2c_msm_init);
+subsys_initcall(i2c_msm_init);
 
 static void i2c_msm_exit(void)
 {
